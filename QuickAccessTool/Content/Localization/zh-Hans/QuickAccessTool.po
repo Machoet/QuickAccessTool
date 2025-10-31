@@ -1,0 +1,337 @@
+﻿# QuickAccessTool Chinese (Simplified) translation.
+# Copyright Epic Games, Inc. All Rights Reserved.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: QuickAccessTool\n"
+"POT-Creation-Date: 2025-10-30 09:28\n"
+"PO-Revision-Date: 2025-10-30 09:28\n"
+"Language-Team: \n"
+"Language: zh-Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. Key:	QuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.h:14
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.h:14
+msgctxt "Contexts,QuickAccessTool"
+msgid "QuickAccessTool Plugin"
+msgstr "快速访问工具插件"
+
+#. Key:	AddNewTask
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:62
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:62
+msgctxt "QuickAccessTool,AddNewTask"
+msgid "Please add a new task..."
+msgstr "请添加一个新任务..."
+
+#. Key:	AddToQuickAccess
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:15
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:15
+msgctxt "QuickAccessTool,AddToQuickAccess"
+msgid "Add to Quick Access Tool"
+msgstr "添加到快速访问工具"
+
+#. Key:	AddToQuickAccessTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:16
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:16
+msgctxt "QuickAccessTool,AddToQuickAccessTooltip"
+msgid "Add the selected assets to the quick access list."
+msgstr "将选中的资源添加到快速访问列表"
+
+#. Key:	BrowseToAssetFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:27
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:27
+msgctxt "QuickAccessTool,BrowseToAssetFormat"
+msgid "Browse To Asset{0}"
+msgstr "浏览至资源{0}"
+
+#. Key:	BrowseToTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:28
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:28
+msgctxt "QuickAccessTool,BrowseToTooltipFormat"
+msgid "Browse To: {0}"
+msgstr "浏览至：{0}"
+
+#. Key:	ClearAllFilesFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:24
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:24
+msgctxt "QuickAccessTool,ClearAllFilesFormat"
+msgid "Clear All Files{0}"
+msgstr "清除所有文件{0}"
+
+#. Key:	ClearAllFilesTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:25
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:25
+msgctxt "QuickAccessTool,ClearAllFilesTooltip"
+msgid "Clear All Files In Tool"
+msgstr "清除工具中的所有文件"
+
+#. Key:	ClipboardNotHasPictures
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:66
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:66
+msgctxt "QuickAccessTool,ClipboardNotHasPictures"
+msgid "There are no pictures on the clipboard."
+msgstr "剪切板里没有可粘贴的图片内容"
+
+#. Key:	ClipboardSaveAsTextureToolTips
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:65
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:65
+msgctxt "QuickAccessTool,ClipboardSaveAsTextureToolTips"
+msgid "The clipboard content will be saved as a Texture."
+msgstr "剪贴板内容将被保存为Texture2D。"
+
+#. Key:	ClipboardTexture
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:64
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:64
+msgctxt "QuickAccessTool,ClipboardTexture"
+msgid "Clipboard Texture{0}"
+msgstr "剪切板图粘贴{0}"
+
+#. Key:	Common
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:48
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:48
+msgctxt "QuickAccessTool,Common"
+msgid "Common"
+msgstr "通用"
+
+#. Key:	CopyColorToClipboard
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:53
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:53
+msgctxt "QuickAccessTool,CopyColorToClipboard"
+msgid "Copy Color To Clipboard"
+msgstr "复制颜色到剪切板"
+
+#. Key:	CopyFileName
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:36
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:36
+msgctxt "QuickAccessTool,CopyFileName"
+msgid "Copy File Name"
+msgstr "复制文件名"
+
+#. Key:	CopyFileNameTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:37
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:37
+msgctxt "QuickAccessTool,CopyFileNameTooltipFormat"
+msgid "Copy File Name: {0}"
+msgstr "复制文件名：{0}"
+
+#. Key:	CopyFilePath
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:42
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:42
+msgctxt "QuickAccessTool,CopyFilePath"
+msgid "Copy File Path"
+msgstr "复制文件路径"
+
+#. Key:	CopyFilePathTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:43
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:43
+msgctxt "QuickAccessTool,CopyFilePathTooltipFormat"
+msgid "Copy File Path: {0}"
+msgstr "复制文件路径：{0}"
+
+#. Key:	CopyFileReference
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:39
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:39
+msgctxt "QuickAccessTool,CopyFileReference"
+msgid "Copy File Reference"
+msgstr "复制文件引用"
+
+#. Key:	CopyFileReferenceTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:40
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:40
+msgctxt "QuickAccessTool,CopyFileReferenceTooltipFormat"
+msgid "Copy File Reference: {0}"
+msgstr "复制文件引用：{0}"
+
+#. Key:	CustomTask
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:61
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:61
+msgctxt "QuickAccessTool,CustomTask"
+msgid "Custom Task"
+msgstr "自定义任务"
+
+#. Key:	Language
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:49
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:49
+msgctxt "QuickAccessTool,Language"
+msgid "Language"
+msgstr "语言"
+
+#. Key:	LessCPU
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:50
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:50
+msgctxt "QuickAccessTool,LessCPU"
+msgid "Use Less CPU when in Background"
+msgstr "处于后台时占用较少CPU"
+
+#. Key:	LoadAssert
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:10
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:10
+msgctxt "QuickAccessTool,LoadAssert"
+msgid "Loading Assets..."
+msgstr "正在加载资源..."
+
+#. Key:	Loading
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:11
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:11
+msgctxt "QuickAccessTool,Loading"
+msgid "Loading {0}..."
+msgstr "正在加载 {0}..."
+
+#. Key:	NoAssetsSelected
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:18
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:18
+msgctxt "QuickAccessTool,NoAssetsSelected"
+msgid "No assets selected. Please select some assets to add."
+msgstr "未选中任何资源。请选择要添加的资源"
+
+#. Key:	OpenColorPicker
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:52
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:52
+msgctxt "QuickAccessTool,OpenColorPicker"
+msgid "Open Color Picker"
+msgstr "打开取色器"
+
+#. Key:	OpenFileFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:30
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:30
+msgctxt "QuickAccessTool,OpenFileFormat"
+msgid "Open File{0}"
+msgstr "打开文件{0}"
+
+#. Key:	OpenFileTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:31
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:31
+msgctxt "QuickAccessTool,OpenFileTooltipFormat"
+msgid "Open:{0}"
+msgstr "打开：{0}"
+
+#. Key:	QuickAccessSection
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:13
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:13
+msgctxt "QuickAccessTool,QuickAccessSection"
+msgid "Quick Access"
+msgstr "快速访问"
+
+#. Key:	QuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:8
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:8
+msgctxt "QuickAccessTool,QuickAccessTool"
+msgid "Quick Access Tool"
+msgstr "快速访问工具"
+
+#. Key:	QuickAccessUpdated
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:19
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:19
+msgctxt "QuickAccessTool,QuickAccessUpdated"
+msgid "Quick access list updated successfully."
+msgstr "快速访问列表已更新成功"
+
+#. Key:	QuickPanel
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:7
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:7
+msgctxt "QuickAccessTool,QuickPanel"
+msgid "Quick Panel"
+msgstr "快速面板"
+
+#. Key:	ReferenceViewFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:33
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:33
+msgctxt "QuickAccessTool,ReferenceViewFormat"
+msgid "Reference View...{0}"
+msgstr "引用查看...{0}"
+
+#. Key:	ReferenceViewTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:34
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:34
+msgctxt "QuickAccessTool,ReferenceViewTooltipFormat"
+msgid "Reference View: {0}"
+msgstr "引用查看：{0}"
+
+#. Key:	SaveAllFiles
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:58
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:58
+msgctxt "QuickAccessTool,SaveAllFiles"
+msgid "Save All Files{0}"
+msgstr "保存所有文件{0}"
+
+#. Key:	SaveAllFilesTipsToolTips
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:59
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:59
+msgctxt "QuickAccessTool,SaveAllFilesTipsToolTips"
+msgid "Save All Files"
+msgstr "保存所有文件"
+
+#. Key:	SaveFile
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:55
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:55
+msgctxt "QuickAccessTool,SaveFile"
+msgid "Save Select Files{0}"
+msgstr "保存选择文件{0}"
+
+#. Key:	SaveFileToolTips
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:56
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:56
+msgctxt "QuickAccessTool,SaveFileToolTips"
+msgid "Save Select Files"
+msgstr "保存选择文件"
+
+#. Key:	SelectAllFilesFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:21
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:21
+msgctxt "QuickAccessTool,SelectAllFilesFormat"
+msgid "Select All Files{0}"
+msgstr "选择所有文件{0}"
+
+#. Key:	SelectAllFilesTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:22
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:22
+msgctxt "QuickAccessTool,SelectAllFilesTooltip"
+msgid "Select All Files In Tool"
+msgstr "选择工具中的所有文件"
+
+#. Key:	ShowInExplorerFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:45
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:45
+msgctxt "QuickAccessTool,ShowInExplorerFormat"
+msgid "Show In Explorer{0}"
+msgstr "在资源管理器中显示{0}"
+
+#. Key:	ShowInExplorerTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:46
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:46
+msgctxt "QuickAccessTool,ShowInExplorerTooltipFormat"
+msgid "Show In Explorer: {0}"
+msgstr "在资源管理器中显示：{0}"
+
+#. Key:	OpenQuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+msgctxt "UICommands.FQuickAccessToolModule,OpenQuickAccessTool"
+msgid "QuickAccess"
+msgstr "快速访问"
+
+#. Key:	OpenQuickAccessTool_ToolTip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+msgctxt "UICommands.FQuickAccessToolModule,OpenQuickAccessTool_ToolTip"
+msgid "File quick access tool"
+msgstr "文件快速访问工具"
+
+#. Key:	PastePicture
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+msgctxt "UICommands.FQuickAccessToolModule,PastePicture"
+msgid "PastePicture"
+msgstr "粘贴图片"
+
+#. Key:	PastePicture_ToolTip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+msgctxt "UICommands.FQuickAccessToolModule,PastePicture_ToolTip"
+msgid "Paste Picture"
+msgstr "粘贴图片"
+
