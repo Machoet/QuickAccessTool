@@ -1,0 +1,573 @@
+// QuickAccessButtonCPP_5_3.txt
+// UE5.3-aligned implementation. Export macro is only on the class in the header.
+
+#include "Rendering/DrawElements.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Widgets/Text/STextBlock.h"
+#if WITH_ACCESSIBILITY
+#include "Widgets/Accessibility/SlateAccessibleWidgets.h"
+#include "Widgets/Accessibility/SlateAccessibleMessageHandler.h"
+#endif
+
+static FName SQuickAccessButtonTypeName("SQuickAccessButton");
+
+SLATE_IMPLEMENT_WIDGET(SQuickAccessButton)
+
+void SQuickAccessButton::PrivateRegisterAttributes(FSlateAttributeInitializer& AttributeInitializer)
+{
+	SLATE_ADD_MEMBER_ATTRIBUTE_DEFINITION_WITH_NAME(AttributeInitializer, "BaseBorderForegroundColor", BorderForegroundColorAttribute, EInvalidateWidgetReason::Paint)
+		.OnValueChanged(FSlateAttributeDescriptor::FAttributeValueChangedDelegate::CreateLambda([](SWidget& Widget)
+		{
+			static_cast<SQuickAccessButton&>(Widget).UpdateForegroundColor();
+		}));
+
+	SLATE_ADD_MEMBER_ATTRIBUTE_DEFINITION_WITH_NAME(AttributeInitializer, "ContentPadding", ContentPaddingAttribute, EInvalidateWidgetReason::Layout)
+		.OnValueChanged(FSlateAttributeDescriptor::FAttributeValueChangedDelegate::CreateLambda([](SWidget& Widget)
+		{
+			static_cast<SQuickAccessButton&>(Widget).UpdatePadding();
+		}));
+
+	SLATE_ADD_MEMBER_ATTRIBUTE_DEFINITION_WITH_NAME(AttributeInitializer, "AppearPressed", AppearPressedAttribute, EInvalidateWidgetReason::Paint)
+		.OnValueChanged(FSlateAttributeDescriptor::FAttributeValueChangedDelegate::CreateLambda([](SWidget& Widget)
+		{
+			static_cast<SQuickAccessButton&>(Widget).UpdatePressStateChanged();
+		}));
+
+	AttributeInitializer.OverrideInvalidationReason("EnabledState", FSlateAttributeDescriptor::FInvalidateWidgetReasonAttribute{EInvalidateWidgetReason::Layout|EInvalidateWidgetReason::Paint});
+	AttributeInitializer.OverrideInvalidationReason("Hovered", FSlateAttributeDescriptor::FInvalidateWidgetReasonAttribute{EInvalidateWidgetReason::Layout|EInvalidateWidgetReason::Paint});
+
+	AttributeInitializer.OverrideOnValueChanged("EnabledState"
+		, FSlateAttributeDescriptor::ECallbackOverrideType::ExecuteAfterPrevious
+		, FSlateAttributeDescriptor::FAttributeValueChangedDelegate::CreateLambda([](SWidget& Widget)
+		{
+			static_cast<SQuickAccessButton&>(Widget).UpdateBorderImage();
+		}));
+
+	AttributeInitializer.OverrideOnValueChanged("Hovered"
+		, FSlateAttributeDescriptor::ECallbackOverrideType::ExecuteAfterPrevious
+		, FSlateAttributeDescriptor::FAttributeValueChangedDelegate::CreateLambda([](SWidget& Widget)
+		{
+			static_cast<SQuickAccessButton&>(Widget).UpdateBorderImage();
+			static_cast<SQuickAccessButton&>(Widget).UpdateForegroundColor();
+		}));
+}
+
+SQuickAccessButton::SQuickAccessButton()
+	: BorderForegroundColorAttribute(*this)
+	, ContentPaddingAttribute(*this)
+	, AppearPressedAttribute(*this)
+{
+#if WITH_ACCESSIBILITY
+	AccessibleBehavior = EAccessibleBehavior::Summary;
+	bCanChildrenBeAccessible = false;
+#endif
+}
+
+void SQuickAccessButton::Construct(const FArguments& InArgs)
+{
+	bIsPressed = false;
+	bIsFocusable = InArgs._IsFocusable;
+
+	BorderForegroundColorAttribute.Assign(*this, InArgs._ForegroundColor);
+
+	OnClicked      = InArgs._OnClicked;
+	OnDoubleClicked= InArgs._OnDoubleClicked;
+	OnPressed      = InArgs._OnPressed;
+	OnReleased     = InArgs._OnReleased;
+	OnHovered      = InArgs._OnHovered;
+	OnUnhovered    = InArgs._OnUnhovered;
+
+	ClickMethod = InArgs._ClickMethod;
+	TouchMethod = InArgs._TouchMethod;
+	PressMethod = InArgs._PressMethod;
+
+	HoveredSound = InArgs._HoveredSoundOverride.Get(InArgs._ButtonStyle->HoveredSlateSound);
+	PressedSound = InArgs._PressedSoundOverride.Get(InArgs._ButtonStyle->PressedSlateSound);
+
+	struct
+	{
+		TSharedRef<SWidget> operator()(const FArguments& OpArgs) const
+		{
+			if ((OpArgs._Content.Widget == SNullWidget::NullWidget) && (OpArgs._Text.IsBound() || !OpArgs._Text.Get().IsEmpty()))
+			{
+				return SNew(STextBlock)
+						.Visibility(EVisibility::HitTestInvisible)
+						.Text(OpArgs._Text)
+						.TextStyle(OpArgs._TextStyle)
+						.TextShapingMethod(OpArgs._TextShapingMethod)
+						.TextFlowDirection(OpArgs._TextFlowDirection);
+			}
+			return OpArgs._Content.Widget;
+		}
+	} DetermineContent;
+
+	SBorder::Construct(SBorder::FArguments()
+		.ContentScale(InArgs._ContentScale)
+		.DesiredSizeScale(InArgs._DesiredSizeScale)
+		.BorderBackgroundColor(InArgs._ButtonColorAndOpacity)
+		.HAlign(InArgs._HAlign)
+		.VAlign(InArgs._VAlign)
+		[
+			DetermineContent(InArgs)
+		]
+	);
+
+	SetContentPadding(InArgs._ContentPadding);
+	SetButtonStyle(InArgs._ButtonStyle);
+
+	if (GetType() == SQuickAccessButtonTypeName)
+	{
+		SetCanTick(false);
+	}
+}
+
+int32 SQuickAccessButton::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
+	FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+{
+	const bool bEnabled = ShouldBeEnabled(bParentEnabled);
+	const bool bShowDisabledEffect = GetShowDisabledEffect();
+
+	const FSlateBrush* BrushResource = !bShowDisabledEffect && !bEnabled ? &Style->Disabled : GetBorderImage();
+	ESlateDrawEffect DrawEffects = bShowDisabledEffect && !bEnabled ? ESlateDrawEffect::DisabledEffect : ESlateDrawEffect::None;
+
+	if (BrushResource && BrushResource->DrawAs != ESlateBrushDrawType::NoDrawType)
+	{
+		FSlateDrawElement::MakeBox(
+			OutDrawElements,
+			LayerId,
+			AllottedGeometry.ToPaintGeometry(),
+			BrushResource,
+			DrawEffects,
+			BrushResource->GetTint(InWidgetStyle) * InWidgetStyle.GetColorAndOpacityTint() * GetBorderBackgroundColor().GetColor(InWidgetStyle)
+		);
+	}
+
+	return SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bEnabled);
+}
+
+FMargin SQuickAccessButton::GetCombinedPadding() const
+{
+	return (IsPressed())
+		? ContentPaddingAttribute.Get() + Style->PressedPadding
+		: ContentPaddingAttribute.Get() + Style->NormalPadding;
+}
+
+void SQuickAccessButton::UpdatePadding()
+{
+	SetPadding(GetCombinedPadding());
+}
+
+bool SQuickAccessButton::GetShowDisabledEffect() const
+{
+	return Style->Disabled.DrawAs == ESlateBrushDrawType::NoDrawType;
+}
+
+void SQuickAccessButton::UpdateShowDisabledEffect()
+{
+	SetShowEffectWhenDisabled(GetShowDisabledEffect());
+}
+
+void SQuickAccessButton::UpdateBorderImage()
+{
+	if (!GetShowDisabledEffect() && !IsInteractable())
+	{
+		SetBorderImage(&Style->Disabled);
+	}
+	else if (IsPressed())
+	{
+		SetBorderImage(&Style->Pressed);
+	}
+	else if (IsHovered())
+	{
+		SetBorderImage(&Style->Hovered);
+	}
+	else
+	{
+		SetBorderImage(&Style->Normal);
+	}
+}
+
+void SQuickAccessButton::UpdateForegroundColor()
+{
+	if (BorderForegroundColorAttribute.Get() == FSlateColor::UseStyle())
+	{
+		if (IsPressed())
+		{
+			SetForegroundColor(Style->PressedForeground);
+		}
+		else if (IsHovered())
+		{
+			SetForegroundColor(Style->HoveredForeground);
+		}
+		else
+		{
+			SetForegroundColor(Style->NormalForeground);
+		}
+	}
+	else
+	{
+		SetForegroundColor(BorderForegroundColorAttribute.Get());
+	}
+}
+
+void SQuickAccessButton::UpdateDisabledForegroundColor()
+{
+	Invalidate(EInvalidateWidgetReason::Paint);
+}
+
+bool SQuickAccessButton::SupportsKeyboardFocus() const
+{
+	return bIsFocusable;
+}
+
+void SQuickAccessButton::OnFocusLost(const FFocusEvent& InFocusEvent)
+{
+	SBorder::OnFocusLost(InFocusEvent);
+	Release();
+}
+
+FReply SQuickAccessButton::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	FReply Reply = FReply::Unhandled();
+	if (IsEnabled() && FSlateApplication::Get().GetNavigationActionFromKey(InKeyEvent) == EUINavigationAction::Accept)
+	{
+		Press();
+		if (PressMethod == EButtonPressMethod::ButtonPress)
+		{
+			Reply = ExecuteOnClick();
+			ensure(Reply.IsEventHandled());
+		}
+		else
+		{
+			Reply = FReply::Handled();
+		}
+	}
+	else
+	{
+		Reply = SBorder::OnKeyDown(MyGeometry, InKeyEvent);
+	}
+	return Reply;
+}
+
+FReply SQuickAccessButton::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+{
+	FReply Reply = FReply::Unhandled();
+	if (IsEnabled() && FSlateApplication::Get().GetNavigationActionFromKey(InKeyEvent) == EUINavigationAction::Accept)
+	{
+		const bool bWasPressed = bIsPressed;
+		Release();
+
+		if (PressMethod == EButtonPressMethod::ButtonRelease || (PressMethod == EButtonPressMethod::DownAndUp && bWasPressed))
+		{
+			Reply = ExecuteOnClick();
+			ensure(Reply.IsEventHandled());
+		}
+		else
+		{
+			Reply = FReply::Handled();
+		}
+	}
+	return Reply;
+}
+
+FReply SQuickAccessButton::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	FReply Reply = FReply::Unhandled();
+	if (IsEnabled() && (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton || MouseEvent.IsTouchEvent()))
+	{
+		Press();
+		PressedScreenSpacePosition = MouseEvent.GetScreenSpacePosition();
+
+		const EButtonClickMethod::Type InputClickMethod = GetClickMethodFromInputType(MouseEvent);
+		if (InputClickMethod == EButtonClickMethod::MouseDown)
+		{
+			Reply = ExecuteOnClick();
+			ensure(Reply.IsEventHandled());
+		}
+		else if (InputClickMethod == EButtonClickMethod::PreciseClick)
+		{
+			Reply = FReply::Handled();
+		}
+		else
+		{
+			Reply = FReply::Handled().CaptureMouse(AsShared());
+		}
+	}
+	return Reply;
+}
+
+FReply SQuickAccessButton::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton &&
+		InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) &&
+		OnDoubleClicked.IsBound())
+	{
+		return OnDoubleClicked.Execute();
+	}
+	return OnMouseButtonDown(InMyGeometry, InMouseEvent);
+}
+
+FReply SQuickAccessButton::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	FReply Reply = FReply::Unhandled();
+	const EButtonClickMethod::Type InputClickMethod = GetClickMethodFromInputType(MouseEvent);
+	const bool bMustBePressed = InputClickMethod == EButtonClickMethod::DownAndUp || InputClickMethod == EButtonClickMethod::PreciseClick;
+	const bool bMeetsPressedRequirements = (!bMustBePressed || (bIsPressed && bMustBePressed));
+
+	if (bMeetsPressedRequirements && ((MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton || MouseEvent.IsTouchEvent())))
+	{
+		Release();
+
+		if (IsEnabled())
+		{
+			if (InputClickMethod == EButtonClickMethod::MouseDown)
+			{
+			}
+			else
+			{
+				bool bEventOverButton = IsHovered();
+				if (!bEventOverButton && MouseEvent.IsTouchEvent())
+				{
+					bEventOverButton = MyGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition());
+				}
+
+				if (bEventOverButton)
+				{
+					const bool bTriggerForTouchEvent = InputClickMethod == EButtonClickMethod::PreciseClick;
+					const bool bTriggerForMouseEvent = (InputClickMethod == EButtonClickMethod::MouseUp || HasMouseCapture());
+					if (bTriggerForTouchEvent || bTriggerForMouseEvent)
+					{
+						Reply = ExecuteOnClick();
+					}
+				}
+			}
+		}
+
+		if (!Reply.IsEventHandled())
+		{
+			Reply = FReply::Handled();
+		}
+	}
+
+	if (!Reply.GetMouseCaptor().IsValid() && HasMouseCapture())
+	{
+		Reply.ReleaseMouseCapture();
+	}
+
+	return Reply;
+}
+
+FReply SQuickAccessButton::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (IsPressed() && IsPreciseTapOrClick(MouseEvent) && FSlateApplication::Get().HasTraveledFarEnoughToTriggerDrag(MouseEvent, PressedScreenSpacePosition))
+	{
+		Release();
+	}
+	return FReply::Unhandled();
+}
+
+void SQuickAccessButton::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	const bool bWasHovered = IsHovered();
+	SBorder::OnMouseEnter(MyGeometry, MouseEvent);
+	if (!bWasHovered && IsHovered())
+	{
+		ExecuteHoverStateChanged(true);
+	}
+}
+
+void SQuickAccessButton::OnMouseLeave(const FPointerEvent& MouseEvent)
+{
+	const bool bWasHovered = IsHovered();
+	SBorder::OnMouseLeave(MouseEvent);
+
+	if (ClickMethod == EButtonClickMethod::MouseDown || IsPreciseTapOrClick(MouseEvent))
+	{
+		Release();
+	}
+
+	if (bWasHovered && !IsHovered())
+	{
+		ExecuteHoverStateChanged(true);
+	}
+}
+
+void SQuickAccessButton::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
+{
+	Release();
+}
+
+FReply SQuickAccessButton::ExecuteOnClick()
+{
+	if (OnClicked.IsBound())
+	{
+		FReply Reply = OnClicked.Execute();
+#if WITH_ACCESSIBILITY
+		FSlateApplicationBase::Get().GetAccessibleMessageHandler()->OnWidgetEventRaised(
+			FSlateAccessibleMessageHandler::FSlateWidgetAccessibleEventArgs(AsShared(), EAccessibleEvent::Activate));
+#endif
+		return Reply;
+	}
+	return FReply::Handled();
+}
+
+void SQuickAccessButton::Press()
+{
+	if (!bIsPressed)
+	{
+		bIsPressed = true;
+		PlayPressedSound();
+		OnPressed.ExecuteIfBound();
+		UpdatePressStateChanged();
+	}
+}
+
+void SQuickAccessButton::Release()
+{
+	if (bIsPressed)
+	{
+		bIsPressed = false;
+		OnReleased.ExecuteIfBound();
+		UpdatePressStateChanged();
+	}
+}
+
+void SQuickAccessButton::UpdatePressStateChanged()
+{
+	UpdatePadding();
+	UpdateBorderImage();
+	UpdateForegroundColor();
+}
+
+bool SQuickAccessButton::IsInteractable() const
+{
+	return IsEnabled();
+}
+
+TEnumAsByte<EButtonClickMethod::Type> SQuickAccessButton::GetClickMethodFromInputType(const FPointerEvent& MouseEvent) const
+{
+	if (MouseEvent.IsTouchEvent())
+	{
+		switch (TouchMethod)
+		{
+			case EButtonTouchMethod::Down:       return EButtonClickMethod::MouseDown;
+			case EButtonTouchMethod::DownAndUp:  return EButtonClickMethod::DownAndUp;
+			case EButtonTouchMethod::PreciseTap: return EButtonClickMethod::PreciseClick;
+		}
+	}
+	return ClickMethod;
+}
+
+bool SQuickAccessButton::IsPreciseTapOrClick(const FPointerEvent& MouseEvent) const
+{
+	return GetClickMethodFromInputType(MouseEvent) == EButtonClickMethod::PreciseClick;
+}
+
+void SQuickAccessButton::PlayPressedSound() const
+{
+	FSlateApplication::Get().PlaySound(PressedSound);
+}
+
+void SQuickAccessButton::PlayHoverSound() const
+{
+	FSlateApplication::Get().PlaySound(HoveredSound);
+}
+
+FVector2D SQuickAccessButton::ComputeDesiredSize(float LayoutScaleMultiplier) const
+{
+	if (ChildSlot.GetWidget() == SNullWidget::NullWidget)
+	{
+		return FVector2D(GetBorderImage()->ImageSize);
+	}
+	return SBorder::ComputeDesiredSize(LayoutScaleMultiplier);
+}
+
+void SQuickAccessButton::SetContentPadding(TAttribute<FMargin> InContentPadding)
+{
+	ContentPaddingAttribute.Assign(*this, MoveTemp(InContentPadding));
+}
+
+void SQuickAccessButton::SetHoveredSound(TOptional<FSlateSound> InHoveredSound)
+{
+	HoveredSound = InHoveredSound.Get(Style->HoveredSlateSound);
+}
+
+void SQuickAccessButton::SetPressedSound(TOptional<FSlateSound> InPressedSound)
+{
+	PressedSound = InPressedSound.Get(Style->PressedSlateSound);
+}
+
+void SQuickAccessButton::SetOnClicked(FOnClicked InOnClicked)
+{
+	OnClicked = InOnClicked;
+}
+
+void SQuickAccessButton::SetOnDoubleClicked(FOnClicked InOnDoubleClicked)
+{
+	OnDoubleClicked = InOnDoubleClicked;
+}
+
+void SQuickAccessButton::SetOnHovered(FSimpleDelegate InOnHovered)
+{
+	OnHovered = InOnHovered;
+}
+
+void SQuickAccessButton::SetOnUnhovered(FSimpleDelegate InOnUnhovered)
+{
+	OnUnhovered = InOnUnhovered;
+}
+
+void SQuickAccessButton::ExecuteHoverStateChanged(bool bPlaySound)
+{
+	if (IsHovered())
+	{
+		if (bPlaySound) { PlayHoverSound(); }
+		OnHovered.ExecuteIfBound();
+	}
+	else
+	{
+		OnUnhovered.ExecuteIfBound();
+	}
+}
+
+void SQuickAccessButton::SetButtonStyle(const FButtonStyle* InButtonStyle)
+{
+	if (InButtonStyle == nullptr)
+	{
+		ensureAlwaysMsgf(false, TEXT("The Style is not valid."));
+		return;
+	}
+
+	Style = InButtonStyle;
+
+	HoveredSound = Style->HoveredSlateSound;
+	PressedSound = Style->PressedSlateSound;
+
+	UpdatePadding();
+	UpdateShowDisabledEffect();
+	UpdateBorderImage();
+	UpdateForegroundColor();
+	UpdateDisabledForegroundColor();
+}
+
+void SQuickAccessButton::SetClickMethod(EButtonClickMethod::Type InClickMethod)
+{
+	ClickMethod = InClickMethod;
+}
+
+void SQuickAccessButton::SetTouchMethod(EButtonTouchMethod::Type InTouchMethod)
+{
+	TouchMethod = InTouchMethod;
+}
+
+void SQuickAccessButton::SetPressMethod(EButtonPressMethod::Type InPressMethod)
+{
+	PressMethod = InPressMethod;
+}
+
+#if WITH_ACCESSIBILITY
+TSharedRef<FSlateAccessibleWidget> SQuickAccessButton::CreateAccessibleWidget()
+{
+	return MakeShareable<FSlateAccessibleWidget>(new FSlateAccessibleButton(SharedThis(this)));
+}
+#endif

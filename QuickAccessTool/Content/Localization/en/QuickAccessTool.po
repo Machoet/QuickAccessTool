@@ -1,0 +1,232 @@
+﻿# QuickAccessTool English translation.
+# Copyright Epic Games, Inc. All Rights Reserved.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: QuickAccessTool\n"
+"POT-Creation-Date: 2025-10-27 07:24\n"
+"PO-Revision-Date: 2025-10-27 07:24\n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Key:	QuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.h:14
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.h:14
+msgctxt "Contexts,QuickAccessTool"
+msgid "QuickAccessTool Plugin"
+msgstr "QuickAccessTool Plugin"
+
+#. Key:	AddToQuickAccess
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:13
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:13
+msgctxt "QuickAccessTool,AddToQuickAccess"
+msgid "Add to Quick Access Tool"
+msgstr "Add to Quick Access Tool"
+
+#. Key:	AddToQuickAccessTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:14
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:14
+msgctxt "QuickAccessTool,AddToQuickAccessTooltip"
+msgid "Add the selected assets to the quick access list."
+msgstr "Add the selected assets to the quick access list."
+
+#. Key:	BrowseToAssetFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:25
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:25
+msgctxt "QuickAccessTool,BrowseToAssetFormat"
+msgid "Browse To Asset{0}"
+msgstr "Browse To Asset{0}"
+
+#. Key:	BrowseToTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:26
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:26
+msgctxt "QuickAccessTool,BrowseToTooltipFormat"
+msgid "Browse To: {0}"
+msgstr "Browse To: {0}"
+
+#. Key:	ClearAllFilesFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:22
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:22
+msgctxt "QuickAccessTool,ClearAllFilesFormat"
+msgid "Clear All Files{0}"
+msgstr "Clear All Files{0}"
+
+#. Key:	ClearAllFilesTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:23
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:23
+msgctxt "QuickAccessTool,ClearAllFilesTooltip"
+msgid "Clear All Files In Tool"
+msgstr "Clear All Files In Tool"
+
+#. Key:	CopyFileName
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:34
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:34
+msgctxt "QuickAccessTool,CopyFileName"
+msgid "Copy File Name"
+msgstr "Copy File Name"
+
+#. Key:	CopyFileNameTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:35
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:35
+msgctxt "QuickAccessTool,CopyFileNameTooltipFormat"
+msgid "Copy File Name: {0}"
+msgstr "Copy File Name: {0}"
+
+#. Key:	CopyFilePath
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:40
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:40
+msgctxt "QuickAccessTool,CopyFilePath"
+msgid "Copy File Path"
+msgstr "Copy File Path"
+
+#. Key:	CopyFilePathTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:41
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:41
+msgctxt "QuickAccessTool,CopyFilePathTooltipFormat"
+msgid "Copy File Path: {0}"
+msgstr "Copy File Path: {0}"
+
+#. Key:	CopyFileReference
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:37
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:37
+msgctxt "QuickAccessTool,CopyFileReference"
+msgid "Copy File Reference"
+msgstr "Copy File Reference"
+
+#. Key:	CopyFileReferenceTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:38
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:38
+msgctxt "QuickAccessTool,CopyFileReferenceTooltipFormat"
+msgid "Copy File Reference: {0}"
+msgstr "Copy File Reference: {0}"
+
+#. Key:	LoadAssert
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:8
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:8
+msgctxt "QuickAccessTool,LoadAssert"
+msgid "Loading Assets..."
+msgstr "Loading Assets..."
+
+#. Key:	Loading
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:9
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:9
+msgctxt "QuickAccessTool,Loading"
+msgid "Loading {0}..."
+msgstr "Loading {0}..."
+
+#. Key:	NoAssetsSelected
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:16
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:16
+msgctxt "QuickAccessTool,NoAssetsSelected"
+msgid "No assets selected. Please select some assets to add."
+msgstr "No assets selected. Please select some assets to add."
+
+#. Key:	OpenFileFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:28
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:28
+msgctxt "QuickAccessTool,OpenFileFormat"
+msgid "Open File{0}"
+msgstr "Open File{0}"
+
+#. Key:	OpenFileTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:29
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:29
+msgctxt "QuickAccessTool,OpenFileTooltipFormat"
+msgid "Open:{0}"
+msgstr "Open:{0}"
+
+#. Key:	QuickAccessSection
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:11
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:11
+msgctxt "QuickAccessTool,QuickAccessSection"
+msgid "Quick Access"
+msgstr "Quick Access"
+
+#. Key:	QuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:7
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:7
+msgctxt "QuickAccessTool,QuickAccessTool"
+msgid "Quick Access Tool"
+msgstr "Quick Access Tool"
+
+#. Key:	QuickAccessUpdated
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:17
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:17
+msgctxt "QuickAccessTool,QuickAccessUpdated"
+msgid "Quick access list updated successfully."
+msgstr "Quick access list updated successfully."
+
+#. Key:	ReferenceViewFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:31
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:31
+msgctxt "QuickAccessTool,ReferenceViewFormat"
+msgid "Reference View...{0}"
+msgstr "Reference View...{0}"
+
+#. Key:	ReferenceViewTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:32
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:32
+msgctxt "QuickAccessTool,ReferenceViewTooltipFormat"
+msgid "Reference View: {0}"
+msgstr "Reference View: {0}"
+
+#. Key:	SelectAllFilesFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:19
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:19
+msgctxt "QuickAccessTool,SelectAllFilesFormat"
+msgid "Select All Files{0}"
+msgstr "Select All Files{0}"
+
+#. Key:	SelectAllFilesTooltip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:20
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:20
+msgctxt "QuickAccessTool,SelectAllFilesTooltip"
+msgid "Select All Files In Tool"
+msgstr "Select All Files In Tool"
+
+#. Key:	ShowInExplorerFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:43
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:43
+msgctxt "QuickAccessTool,ShowInExplorerFormat"
+msgid "Show In Explorer{0}"
+msgstr "Show In Explorer{0}"
+
+#. Key:	ShowInExplorerTooltipFormat
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:44
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Language/Language.h:44
+msgctxt "QuickAccessTool,ShowInExplorerTooltipFormat"
+msgid "Show In Explorer: {0}"
+msgstr "Show In Explorer: {0}"
+
+#. Key:	OpenQuickAccessTool
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+msgctxt "UICommands.FQuickAccessToolModule,OpenQuickAccessTool"
+msgid "QuickAccess"
+msgstr "QuickAccess"
+
+#. Key:	OpenQuickAccessTool_ToolTip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:9
+msgctxt "UICommands.FQuickAccessToolModule,OpenQuickAccessTool_ToolTip"
+msgid "File quick access tool"
+msgstr "File quick access tool"
+
+#. Key:	ShowInExplorer
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+msgctxt "UICommands.FQuickAccessToolModule,ShowInExplorer"
+msgid "ShowInExplorer"
+msgstr "ShowInExplorer"
+
+#. Key:	ShowInExplorer_ToolTip
+#. SourceLocation:	Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+#: Plugins/QuickAccessTool/Source/QuickAccessTool/Module/QuickAccessToolCommands.cpp:10
+msgctxt "UICommands.FQuickAccessToolModule,ShowInExplorer_ToolTip"
+msgid "Show In Explorer"
+msgstr "Show In Explorer"
+
