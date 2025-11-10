@@ -236,7 +236,7 @@ void SQuickAccessWidget::Construct(const FArguments& InArgs)
 						+ SOverlay::Slot()
 						.VAlign(VAlign_Top)
 						.HAlign(HAlign_Fill)
-						.Padding(0.0f, SQuickAccessLineWidget::GetSize() - SQuickAccessLineWidget::GetOffset(), 0.f, 0.f)
+						.Padding(0.0f, SQuickAccessLineWidget::GetSize(), 0.f, 0.f)
 						[
 							DragLine.ToSharedRef()
 						]
@@ -563,14 +563,7 @@ void SQuickAccessWidget::OnDragItem(const FVector2D Position, const float Offset
 		}
 
 		const int DragIndex = FMath::Clamp(Position.Y / SQuickAccessLineWidget::GetSize(), -1.f, QuickAccessLineWidgets.Num() - 1.f);
-		if (DragIndex == -1)
-		{
-			DragLine->SetRenderTransform(FSlateRenderTransform(FVector2D(0, DragIndex * SQuickAccessLineWidget::GetSize() + 2)));
-		}
-		else
-		{
-			DragLine->SetRenderTransform(FSlateRenderTransform(FVector2D(0, DragIndex * SQuickAccessLineWidget::GetSize() + 2 * DragIndex)));
-		}
+		DragLine->SetRenderTransform(FSlateRenderTransform(FVector2D(0, DragIndex * SQuickAccessLineWidget::GetSize())));
 	}
 }
 
