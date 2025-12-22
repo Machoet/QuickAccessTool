@@ -7,7 +7,7 @@
 UE4.26~ UE5.6
 
 编译版本插件放在引擎的Marketplace下
-![alt text](image-1.png)
+![alt text](/Resources/image-1.png)
 
 源码版本放在项目插件路径正常编译
 
