@@ -20,6 +20,12 @@
       "LoadingPhase": "Default"
     }
   ],
+  "Plugins": [
+    {
+      "Name": "AssetManagerEditor",
+      "Enabled": true
+    }
+  ],
   "LocalizationTargets": [
     {
       "Name": "QuickAccessTool",

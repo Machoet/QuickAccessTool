@@ -10,18 +10,52 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 
+struct FCommandItem
+{
+	FString CommandName;
+	FString CommandText;
+	FKey BindKey;
+	FString BindKeyString;
+
+	FCommandItem(const FString& InName, const FString& InText)
+		: CommandName(InName)
+		  , CommandText(InText)
+		  , BindKey(EKeys::Invalid)
+	{
+		BindKeyString = TEXT("");
+	}
+
+	FCommandItem(const FString& InName, const FString& InText, const FKey& InKey)
+		: CommandName(InName)
+		  , CommandText(InText)
+		  , BindKey(InKey)
+	{
+		BindKeyString = InKey.ToString();
+	}
+
+	FCommandItem(const FString& InName, const FString& InText, const FString& InKey)
+		: CommandName(InName)
+		  , CommandText(InText),
+		  BindKey(FName(InKey))
+	{
+		BindKeyString = InKey;
+	}
+};
+
 struct FQuickAccessArchiveInfo
 {
 	TArray<FString> PathArray = {};
-	
+
 	TMap<FString, FString> CommandMap = {};
+
+	TMap<FString, FString> CommandKey = {};
 
 	bool bCopyColorToClipboard = false;
 
 	int32 ActiveMenuIndex = 0;
 
 	FText CustomTaskText;
-	
+
 	int32 CustomTaskFontSize = 10;
 
 	bool Save() const
@@ -33,24 +67,31 @@ struct FQuickAccessArchiveInfo
 		{
 			JsonArray.Add(MakeShared<FJsonValueString>(Path));
 		}
-		
+
 		TSharedPtr<FJsonObject> CommandMapObject = MakeShared<FJsonObject>();
 		for (const auto& CommandPair : CommandMap)
 		{
 			CommandMapObject->SetStringField(CommandPair.Key, CommandPair.Value);
 		}
-		RootObject->SetObjectField("CommandMap", CommandMapObject);
-		
-		RootObject->SetArrayField("PathArray", JsonArray);
-		RootObject->SetBoolField("bCopyColorToClipboard", bCopyColorToClipboard);
-		RootObject->SetNumberField("ActiveMenuIndex", ActiveMenuIndex);
-		RootObject->SetStringField("CustomTaskText", CustomTaskText.ToString());
-		RootObject->SetNumberField("CustomTaskFontSize", CustomTaskFontSize);
+		RootObject->SetObjectField(TEXT("CommandMap"), CommandMapObject);
+
+		TSharedPtr<FJsonObject> CommandKeyMapObject = MakeShared<FJsonObject>();
+		for (const auto& CommandPair : CommandKey)
+		{
+			CommandKeyMapObject->SetStringField(CommandPair.Key, CommandPair.Value);
+		}
+		RootObject->SetObjectField(TEXT("CommandKey"), CommandKeyMapObject);
+
+		RootObject->SetArrayField(TEXT("PathArray"), JsonArray);
+		RootObject->SetBoolField(TEXT("bCopyColorToClipboard"), bCopyColorToClipboard);
+		RootObject->SetNumberField(TEXT("ActiveMenuIndex"), ActiveMenuIndex);
+		RootObject->SetStringField(TEXT("CustomTaskText"), CustomTaskText.ToString());
+		RootObject->SetNumberField(TEXT("CustomTaskFontSize"), CustomTaskFontSize);
 
 		FString OutputString;
 		const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
 		FJsonSerializer::Serialize(RootObject.ToSharedRef(), Writer);
-		
+
 		return FFileHelper::SaveStringToFile(OutputString, *UQuickAccessSettings::Get()->GetFilePath());
 	}
 
@@ -71,7 +112,7 @@ struct FQuickAccessArchiveInfo
 		}
 		PathArray.Empty();
 		const TArray<TSharedPtr<FJsonValue>>* JsonArray;
-		if (RootObject->TryGetArrayField("PathArray", JsonArray))
+		if (RootObject->TryGetArrayField(TEXT("PathArray"), JsonArray))
 		{
 			for (const TSharedPtr<FJsonValue>& Value : *JsonArray)
 			{
@@ -84,7 +125,7 @@ struct FQuickAccessArchiveInfo
 
 		CommandMap.Empty();
 		const TSharedPtr<FJsonObject>* CommandMapObject;
-		if (RootObject->TryGetObjectField("CommandMap", CommandMapObject))
+		if (RootObject->TryGetObjectField(TEXT("CommandMap"), CommandMapObject))
 		{
 			for (const auto& Field : (*CommandMapObject)->Values)
 			{
@@ -94,41 +135,49 @@ struct FQuickAccessArchiveInfo
 				}
 			}
 		}
-		
-		RootObject->TryGetBoolField("bCopyColorToClipboard", bCopyColorToClipboard);
-		RootObject->TryGetNumberField("ActiveMenuIndex", ActiveMenuIndex);
+
+		CommandKey.Empty();
+		const TSharedPtr<FJsonObject>* CommandKyeObject;
+		if (RootObject->TryGetObjectField(TEXT("CommandKey"), CommandKyeObject))
+		{
+			for (const auto& Field : (*CommandKyeObject)->Values)
+			{
+				if (Field.Value->Type == EJson::String)
+				{
+					CommandKey.Add(Field.Key, Field.Value->AsString());
+				}
+			}
+		}
+
+		RootObject->TryGetBoolField(TEXT("bCopyColorToClipboard"), bCopyColorToClipboard);
+		RootObject->TryGetNumberField(TEXT("ActiveMenuIndex"), ActiveMenuIndex);
 		FString TempCustomTaskText;
-		RootObject->TryGetStringField("CustomTaskText", TempCustomTaskText);
+		RootObject->TryGetStringField(TEXT("CustomTaskText"), TempCustomTaskText);
 		CustomTaskText = FText::FromString(TempCustomTaskText);
-		RootObject->TryGetNumberField("CustomTaskFontSize", CustomTaskFontSize);
+		RootObject->TryGetNumberField(TEXT("CustomTaskFontSize"), CustomTaskFontSize);
 		return true;
 	}
 
-	void AddCommand(const FString& Description, const FString& Command)
+	void AddCommand(const FString& Description, const FString& Command, const FKey& CurrentKey)
 	{
 		CommandMap.Add(Description, Command);
+		CommandKey.Add(Description, CurrentKey.ToString());
 	}
-	
+
+	void ChangeCommandKey(const FString& Description, const FKey& CurrentKey)
+	{
+		CommandKey.Add(Description, CurrentKey.ToString());
+	}
+
 	void RemoveCommand(const FString& Description)
 	{
 		CommandMap.Remove(Description);
+		CommandKey.Remove(Description);
 	}
-	
-	bool HasCommand(const FString& Description) const
+
+	void EmptyCommand()
 	{
-		return CommandMap.Contains(Description);
-	}
-	
-	TArray<FString> GetAllCommandDescriptions() const
-	{
-		TArray<FString> Descriptions;
-		CommandMap.GetKeys(Descriptions);
-		return Descriptions;
-	}
-	
-	FString GetCommandByDescription(const FString& Description) const
-	{
-		const FString* Command = CommandMap.Find(Description);
-		return Command ? *Command : FString();
+		CommandMap.Empty();
+		CommandKey.Empty();
 	}
 };

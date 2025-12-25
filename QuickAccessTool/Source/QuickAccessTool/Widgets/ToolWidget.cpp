@@ -441,6 +441,14 @@ void SToolWidget::OnDeleteObject()
 	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
 
+void SToolWidget::EventOnKeyDown(const FKey& InKey) const
+{
+	if (CustomCommandsPanel.IsValid())
+	{
+		CustomCommandsPanel->EventOnKeyDown(InKey);
+	}
+}
+
 void SToolWidget::OnAddObjects(TArray<FString> NewPath)
 {
 	TArray<FString> Path;

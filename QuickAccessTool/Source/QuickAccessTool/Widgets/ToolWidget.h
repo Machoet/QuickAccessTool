@@ -44,6 +44,7 @@ public:
 	void OnSaveClicked() const;
 	void OnSaveAllClicked() const;
 	void OnDeleteObject();
+	void EventOnKeyDown(const FKey& InKey) const;
 
 	TSharedPtr<SWidget> CreateRightClickMenu();
 	void CreateQuickPanelMenu(FMenuBuilder& MenuBuilder);

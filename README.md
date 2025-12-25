@@ -79,6 +79,8 @@ UE4.26~ UE5.6
 
 ![alt text](/Resources/Editor.png)
 
+添加按键能执行命令的配置
 
+![alt text](/Resources/Key.png)
 ## 反馈
 联系QQ2923211924并说明来意

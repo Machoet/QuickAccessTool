@@ -68,6 +68,7 @@ namespace QuickAccessToolLanguage
 
 	static const FText Command = LOCTEXT("Command", "Command");
 	static const FText CustomCommandPanel = LOCTEXT("Title", "Custom command panel");
+	static const FText Shortcuts = LOCTEXT("Shortcuts", "Shortcuts:");
 	static const FText CommandLabel = LOCTEXT("CommandLabel", "Command:");
 	static const FText CommandHint = LOCTEXT("CommandHint", "Enter console commands, such as: stat fps");
 	static const FText DescLabel = LOCTEXT("DescLabel", "Description:");

@@ -33,6 +33,10 @@ public:
 
 	void OnMenuAddObjectClicked() const;
 
+	void EventOnKeyDown(const FKey& InKey) const;
+
+	static FQuickAccessArchiveInfo QuickAccessArchiveInfo;
+
 private:
 	void RegisterMenus();
 
@@ -40,8 +44,7 @@ private:
 
 	TSharedPtr<FUICommandList> CommandList = nullptr;
 
-	TSharedPtr<SToolWidget> QuickAccessWidget = nullptr;
+	TSharedPtr<SToolWidget> ToolWidget = nullptr;
 
-public:
-	static FQuickAccessArchiveInfo QuickAccessArchiveInfo;
+	TSharedPtr<class FQuickAccessInputProcessor> InputProcessor;
 };

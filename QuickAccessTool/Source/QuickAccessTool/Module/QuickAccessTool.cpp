@@ -3,6 +3,7 @@
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
 #include "LevelEditor.h"
+#include "QuickAccessInputProcessor.h"
 #include "QuickAccessToolStyle.h"
 #include "QuickAccessToolCommands.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -30,6 +31,12 @@ void FQuickAccessToolModule::StartupModule()
 		                                                  this, &FQuickAccessToolModule::OnSpawnPluginTab)).
 	                          SetDisplayName(QuickAccessToolLanguage::QuickAccessTool).SetMenuType(
 		                          ETabSpawnerMenuType::Hidden);
+	InputProcessor = MakeShareable(new FQuickAccessInputProcessor());
+	if (InputProcessor.IsValid() && FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().RegisterInputPreProcessor(InputProcessor);
+		InputProcessor->KeyEvent.AddRaw(this, &FQuickAccessToolModule::EventOnKeyDown);
+	}
 }
 
 void FQuickAccessToolModule::CreateCommandList()
@@ -54,16 +61,21 @@ void FQuickAccessToolModule::ShutdownModule()
 	FQuickAccessToolStyle::Shutdown();
 	FQuickAccessToolCommands::Unregister();
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(QuickAccessToolTabName);
+	if (InputProcessor.IsValid() && FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().UnregisterInputPreProcessor(InputProcessor);
+		InputProcessor.Reset();
+	}
 }
 
 TSharedRef<SDockTab> FQuickAccessToolModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	SAssignNew(QuickAccessWidget, SToolWidget)
+	SAssignNew(ToolWidget, SToolWidget)
 	.OnAddObjectClicked_Raw(this, &FQuickAccessToolModule::OnAddObjectClicked);
 	return SNew(SDockTab)
 		.TabRole(NomadTab)
 		[
-			QuickAccessWidget.ToSharedRef()
+			ToolWidget.ToSharedRef()
 		];
 }
 
@@ -122,9 +134,9 @@ bool FQuickAccessToolModule::AddSelectedFiles() const
 		TempArray.Add(SelectedAsset.ObjectPath.ToString());
 	}
 
-	if (QuickAccessWidget.IsValid())
+	if (ToolWidget.IsValid())
 	{
-		QuickAccessWidget->OnAddObjects(TempArray);
+		ToolWidget->OnAddObjects(TempArray);
 	}
 	return true;
 }
@@ -171,6 +183,14 @@ void FQuickAccessToolModule::OnMenuAddObjectClicked() const
 	AddSelectedFiles();
 }
 
+void FQuickAccessToolModule::EventOnKeyDown(const FKey& InKey) const
+{
+	if (ToolWidget.IsValid())
+	{
+		ToolWidget->EventOnKeyDown(InKey);
+	}
+}
+
 void FQuickAccessToolModule::RegisterMenus()
 {
 	{
@@ -200,7 +220,5 @@ void FQuickAccessToolModule::RegisterMenus()
 				this, &FQuickAccessToolModule::OnExtendContentBrowserAssetSelectionMenu));
 	}
 }
-
-#undef LOCTEXT_NAMESPACE
 
 IMPLEMENT_MODULE(FQuickAccessToolModule, QuickAccessTool)
