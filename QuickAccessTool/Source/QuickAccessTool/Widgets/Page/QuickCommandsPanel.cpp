@@ -1,4 +1,4 @@
-﻿#include "CustomCommandsPanel.h"
+﻿#include "QuickCommandsPanel.h"
 #include "SKeySelector.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -9,7 +9,7 @@
 #include "QuickAccessTool/Language/Language.h"
 #include "QuickAccessTool/Module/QuickAccessTool.h"
 
-void SCustomCommandsPanel::Construct(const FArguments& InArgs)
+void SQuickCommandsPanel::Construct(const FArguments& InArgs)
 {
 	RefreshDisplayItems();
 
@@ -117,7 +117,7 @@ void SCustomCommandsPanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(QuickAccessToolLanguage::AddButton)
-					.OnClicked(this, &SCustomCommandsPanel::OnAddButtonClicked)
+					.OnClicked(this, &SQuickCommandsPanel::OnAddButtonClicked)
 					.HAlign(HAlign_Center)
 				]
 
@@ -127,7 +127,7 @@ void SCustomCommandsPanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(QuickAccessToolLanguage::DeleteButton)
-					.OnClicked(this, &SCustomCommandsPanel::OnDeleteButtonClicked)
+					.OnClicked(this, &SQuickCommandsPanel::OnDeleteButtonClicked)
 					.HAlign(HAlign_Center)
 				]
 
@@ -155,15 +155,15 @@ void SCustomCommandsPanel::Construct(const FArguments& InArgs)
 			[
 				SAssignNew(CommandListView, SListView<TSharedPtr<FCommandItem>>)
 				.ListItemsSource(&CommandItems)
-				.OnGenerateRow(this, &SCustomCommandsPanel::OnGenerateCommandRow)
-				.OnMouseButtonDoubleClick(this, &SCustomCommandsPanel::OnCommandItemClicked)
+				.OnGenerateRow(this, &SQuickCommandsPanel::OnGenerateCommandRow)
+				.OnMouseButtonDoubleClick(this, &SQuickCommandsPanel::OnCommandItemClicked)
 				.SelectionMode(ESelectionMode::Single)
 			]
 		]
 	];
 }
 
-TSharedRef<ITableRow> SCustomCommandsPanel::OnGenerateCommandRow(
+TSharedRef<ITableRow> SQuickCommandsPanel::OnGenerateCommandRow(
 	TSharedPtr<FCommandItem> Item,
 	const TSharedRef<STableViewBase>& OwnerTable)
 {
@@ -224,12 +224,12 @@ TSharedRef<ITableRow> SCustomCommandsPanel::OnGenerateCommandRow(
 		];
 }
 
-void SCustomCommandsPanel::OnCommandItemClicked(TSharedPtr<FCommandItem> Item)
+void SQuickCommandsPanel::OnCommandItemClicked(TSharedPtr<FCommandItem> Item)
 {
 	ExecuteCommand(Item->CommandName);
 }
 
-void SCustomCommandsPanel::ExecuteCommand(const FString& Command)
+void SQuickCommandsPanel::ExecuteCommand(const FString& Command)
 {
 #if WITH_EDITOR
 	if (GEditor)
@@ -261,7 +261,7 @@ void SCustomCommandsPanel::ExecuteCommand(const FString& Command)
 	}
 }
 
-FReply SCustomCommandsPanel::OnAddButtonClicked()
+FReply SQuickCommandsPanel::OnAddButtonClicked()
 {
 	FString Command = NewCommandInput->GetText().ToString();
 	FString Description = NewDescriptionInput->GetText().ToString();
@@ -283,7 +283,7 @@ FReply SCustomCommandsPanel::OnAddButtonClicked()
 	return FReply::Handled();
 }
 
-FReply SCustomCommandsPanel::OnDeleteButtonClicked()
+FReply SQuickCommandsPanel::OnDeleteButtonClicked()
 {
 	if (CommandListView.IsValid())
 	{
@@ -300,7 +300,7 @@ FReply SCustomCommandsPanel::OnDeleteButtonClicked()
 	return FReply::Handled();
 }
 
-TOptional<FKey> SCustomCommandsPanel::GetCurrentKey(const TSharedPtr<FCommandItem>& Item) const
+TOptional<FKey> SQuickCommandsPanel::GetCurrentKey(const TSharedPtr<FCommandItem>& Item) const
 {
 	if (Item.IsValid())
 	{
@@ -312,7 +312,7 @@ TOptional<FKey> SCustomCommandsPanel::GetCurrentKey(const TSharedPtr<FCommandIte
 	return Invalid;
 }
 
-void SCustomCommandsPanel::OnKeyChanged(const TSharedPtr<FKey>& SelectedKey, const TSharedPtr<FCommandItem>& Item)
+void SQuickCommandsPanel::OnKeyChanged(const TSharedPtr<FKey>& SelectedKey, const TSharedPtr<FCommandItem>& Item)
 {
 	if (Item.IsValid())
 	{
@@ -332,7 +332,7 @@ void SCustomCommandsPanel::OnKeyChanged(const TSharedPtr<FKey>& SelectedKey, con
 	}
 }
 
-void SCustomCommandsPanel::EventOnKeyDown(const FKey& InKey) const
+void SQuickCommandsPanel::EventOnKeyDown(const FKey& InKey) const
 {
 	if (FQuickAccessToolModule::QuickAccessArchiveInfo.CommandKey.Num() <= 0)
 	{
@@ -353,19 +353,19 @@ void SCustomCommandsPanel::EventOnKeyDown(const FKey& InKey) const
 	}
 }
 
-void SCustomCommandsPanel::AddCommand(const FString& CommandName, const FString& CommandText)
+void SQuickCommandsPanel::AddCommand(const FString& CommandName, const FString& CommandText)
 {
 	FQuickAccessToolModule::QuickAccessArchiveInfo.AddCommand(CommandText, CommandName, CurrentKey);
 	RefreshDisplayItems();
 }
 
-void SCustomCommandsPanel::RemoveCommand(const FString& Description)
+void SQuickCommandsPanel::RemoveCommand(const FString& Description)
 {
 	FQuickAccessToolModule::QuickAccessArchiveInfo.RemoveCommand(Description);
 	RefreshDisplayItems();
 }
 
-void SCustomCommandsPanel::RemoveCommand(int32 Index)
+void SQuickCommandsPanel::RemoveCommand(int32 Index)
 {
 	if (CommandItems.IsValidIndex(Index))
 	{
@@ -374,7 +374,7 @@ void SCustomCommandsPanel::RemoveCommand(int32 Index)
 	}
 }
 
-void SCustomCommandsPanel::ClearAllCommands()
+void SQuickCommandsPanel::ClearAllCommands()
 {
 	FQuickAccessToolModule::QuickAccessArchiveInfo.EmptyCommand();
 
@@ -388,7 +388,7 @@ void SCustomCommandsPanel::ClearAllCommands()
 	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
 
-void SCustomCommandsPanel::RefreshDisplayItems()
+void SQuickCommandsPanel::RefreshDisplayItems()
 {
 	CommandItems.Empty();
 

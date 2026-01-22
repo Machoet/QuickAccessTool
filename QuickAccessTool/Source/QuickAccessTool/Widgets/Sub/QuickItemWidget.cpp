@@ -1,8 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "CustomItemObjectWidget.h"
+#include "QuickItemWidget.h"
 
 #include "FileHelpers.h"
+#include "QuickAccessTool/Module/QuickAccessTool.h"
 #if ENGINE_MAJOR_VERSION == 4
 #elif ENGINE_MAJOR_VERSION == 5
 #include "EditorStyleSet.h"
@@ -19,10 +20,11 @@
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-void SCustomItemObjectWidget::Construct(const FArguments& InArgs)
+void SQuickItemWidget::Construct(const FArguments& InArgs)
 {
 	IsSelected = InArgs._IsSelected.Get();
 	Text = InArgs._Text.Get();
+	TabName = InArgs._TabName.Get();	
 
 	OnClicked = InArgs._OnClicked;
 	OnItemDrag = InArgs._OnItemDrag;
@@ -31,6 +33,9 @@ void SCustomItemObjectWidget::Construct(const FArguments& InArgs)
 	OnSelectAllClicked = InArgs._OnSelectAllClicked;
 	OnClearAllClicked = InArgs._OnClearAllClicked;
 
+	OnAddNewTabClicked = InArgs._OnAddNewTabClicked;
+	OnRemoveTabClicked = InArgs._OnRemoveTabClicked;
+	OnMoveToClick = InArgs._OnMoveToClick;
 	Path = InArgs._Path.Get();
 	IconWidget = InArgs._IconWidget.Get();
 	Index = InArgs._Index.Get();
@@ -40,11 +45,11 @@ void SCustomItemObjectWidget::Construct(const FArguments& InArgs)
 		return;
 	}
 	SAssignNew(Button, SDoubleClickButton)
-	.OnDoubleClicked(this, &SCustomItemObjectWidget::OnButtonDoubleClick)
+	.OnDoubleClicked(this, &SQuickItemWidget::OnButtonDoubleClick)
 	.ButtonStyle(&WidgetStyle)
-	.OnPressed(this, &SCustomItemObjectWidget::OnButtonPressed)
-	.OnReleased(this, &SCustomItemObjectWidget::OnButtonReleased)
-	.OnClicked(this, &SCustomItemObjectWidget::OnButtonClick);
+	.OnPressed(this, &SQuickItemWidget::OnButtonPressed)
+	.OnReleased(this, &SQuickItemWidget::OnButtonReleased)
+	.OnClicked(this, &SQuickItemWidget::OnButtonClick);
 
 	SAssignNew(TextBlock, STextBlock)
 	.Visibility(EVisibility::SelfHitTestInvisible)
@@ -84,7 +89,7 @@ void SCustomItemObjectWidget::Construct(const FArguments& InArgs)
 						.HAlign(HAlign_Left)
 						[
 							SNew(SImage)
-							.Image(this, &SCustomItemObjectWidget::GetDirtyImage)
+							.Image(this, &SQuickItemWidget::GetDirtyImage)
 						]
 					]
 				]
@@ -101,7 +106,7 @@ void SCustomItemObjectWidget::Construct(const FArguments& InArgs)
 	RefreshButtonState();
 }
 
-void SCustomItemObjectWidget::Tick(const FGeometry& AllottedGeometry, const double CurrentTime, float DeltaTime)
+void SQuickItemWidget::Tick(const FGeometry& AllottedGeometry, const double CurrentTime, float DeltaTime)
 {
 	SCompoundWidget::Tick(AllottedGeometry, CurrentTime, DeltaTime);
 
@@ -115,7 +120,7 @@ void SCustomItemObjectWidget::Tick(const FGeometry& AllottedGeometry, const doub
 	}
 }
 
-void SCustomItemObjectWidget::OnButtonPressed()
+void SQuickItemWidget::OnButtonPressed()
 {
 	bIsDragging = true;
 	InitialMousePosition = FSlateApplication::Get().GetCursorPos();
@@ -123,7 +128,7 @@ void SCustomItemObjectWidget::OnButtonPressed()
 	OnItemDragStart.ExecuteIfBound(DragPosition, DragOffset.Y, GetIndex());
 }
 
-void SCustomItemObjectWidget::OnButtonReleased()
+void SQuickItemWidget::OnButtonReleased()
 {
 	if (bIsDragging)
 	{
@@ -133,7 +138,7 @@ void SCustomItemObjectWidget::OnButtonReleased()
 	}
 }
 
-FReply SCustomItemObjectWidget::OnButtonClick() const
+FReply SQuickItemWidget::OnButtonClick() const
 {
 	if (OnClicked.IsBound())
 	{
@@ -142,13 +147,13 @@ FReply SCustomItemObjectWidget::OnButtonClick() const
 	return FReply::Unhandled();
 }
 
-FReply SCustomItemObjectWidget::OnButtonDoubleClick() const
+FReply SQuickItemWidget::OnButtonDoubleClick() const
 {
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(GetObject());
 	return FReply::Handled();
 }
 
-void SCustomItemObjectWidget::SetSelected(const bool bIsSelected)
+void SQuickItemWidget::SetSelected(const bool bIsSelected)
 {
 	if (bIsSelected == IsSelected)
 	{
@@ -158,7 +163,7 @@ void SCustomItemObjectWidget::SetSelected(const bool bIsSelected)
 	RefreshButtonState();
 }
 
-void SCustomItemObjectWidget::RefreshButtonState()
+void SQuickItemWidget::RefreshButtonState()
 {
 	if (IsSelected)
 	{
@@ -176,26 +181,26 @@ void SCustomItemObjectWidget::RefreshButtonState()
 	}
 }
 
-bool SCustomItemObjectWidget::GetIsSelected() const
+bool SQuickItemWidget::GetIsSelected() const
 {
 	return IsSelected;
 }
 
-void SCustomItemObjectWidget::BrowserToObject() const
+void SQuickItemWidget::BrowserToObject() const
 {
 	TArray<UObject*> ObjectsToSync;
 	ObjectsToSync.Add(GetObject());
 	GEditor->SyncBrowserToObjects(ObjectsToSync);
 }
 
-void SCustomItemObjectWidget::ReferenceViewer() const
+void SQuickItemWidget::ReferenceViewer() const
 {
 	TArray<FAssetIdentifier> AssetIdentifiers;
 	AssetIdentifiers.Add(FAssetIdentifier(GetObject()->GetOutermost()->GetFName()));
 	IAssetManagerEditorModule::Get().OpenReferenceViewerUI(AssetIdentifiers);
 }
 
-void SCustomItemObjectWidget::ExploreFolder() const
+void SQuickItemWidget::ExploreFolder() const
 {
 	if (IsValid(GetObject()))
 	{
@@ -209,7 +214,7 @@ void SCustomItemObjectWidget::ExploreFolder() const
 	}
 }
 
-void SCustomItemObjectWidget::RunEditorUtilityWidget() const
+void SQuickItemWidget::RunEditorUtilityWidget() const
 {
 	UObject* Object = GetObject();
 	if (!Object)
@@ -227,7 +232,7 @@ void SCustomItemObjectWidget::RunEditorUtilityWidget() const
 	}
 }
 
-void SCustomItemObjectWidget::Save() const
+void SQuickItemWidget::Save() const
 {
 	const UObject* Object = GetObject();
 	if (!Object)
@@ -246,12 +251,12 @@ void SCustomItemObjectWidget::Save() const
 	}
 }
 
-FReply SCustomItemObjectWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SQuickItemWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	return SCompoundWidget::OnMouseButtonDown(MyGeometry, MouseEvent);
 }
 
-FReply SCustomItemObjectWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SQuickItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::RightMouseButton)
 	{
@@ -276,7 +281,7 @@ FReply SCustomItemObjectWidget::OnMouseButtonUp(const FGeometry& MyGeometry, con
 	return SCompoundWidget::OnMouseButtonUp(MyGeometry, MouseEvent);
 }
 
-TSharedPtr<SWidget> SCustomItemObjectWidget::CreateRightClickMenu()
+TSharedPtr<SWidget> SQuickItemWidget::CreateRightClickMenu()
 {
 	if (!IsValid(GetObject()))
 	{
@@ -284,8 +289,63 @@ TSharedPtr<SWidget> SCustomItemObjectWidget::CreateRightClickMenu()
 	}
 	FMenuBuilder MenuBuilder(true, nullptr);
 
-	TWeakPtr<SCustomItemObjectWidget> TempThis = SharedThis(this);
+	TWeakPtr<SQuickItemWidget> TempThis = SharedThis(this);
 	UObject* Object = GetObject();
+
+	MenuBuilder.AddSubMenu(
+		QuickAccessToolLanguage::MoveToNewPage,
+		QuickAccessToolLanguage::MoveToAnotherPage,
+		FNewMenuDelegate::CreateLambda([TempThis](FMenuBuilder& SubMenuBuilder)
+		{
+			if (!TempThis.IsValid()) return;
+
+			TArray<FString> AllTabNames;
+			FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.GetKeys(AllTabNames);
+			for (const FString& TabName : AllTabNames)
+			{
+				if (TempThis.Pin()->TabName == TabName)
+				{
+					continue;
+				}
+				SubMenuBuilder.AddMenuEntry(
+					FText::FromString(TabName),
+					FText::Format(QuickAccessToolLanguage::MoveToAnotherPage, FText::FromString(TabName)),
+					FSlateIcon(),
+					FUIAction(FExecuteAction::CreateLambda([TempThis, TabName]()
+					{
+						TempThis.Pin()->OnMoveToClick.ExecuteIfBound(TabName, TempThis.Pin()->GetIndex());
+					}))
+				);
+			}
+		})
+	);
+
+	MenuBuilder.AddMenuEntry(
+		QuickAccessToolLanguage::AddNewTab,
+		QuickAccessToolLanguage::AddNewTabTooltip,
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([TempThis]()
+		{
+			if (TempThis.IsValid())
+			{
+				TempThis.Pin()->OnAddNewTabClicked.ExecuteIfBound();
+			}
+		}))
+	);
+
+	MenuBuilder.AddMenuEntry(
+		QuickAccessToolLanguage::RemoveCurrentTab,
+		QuickAccessToolLanguage::RemoveCurrentTabTooltip,
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateLambda([TempThis]()
+		{
+			if (TempThis.IsValid())
+			{
+				TempThis.Pin()->OnRemoveTabClicked.ExecuteIfBound();
+			}
+		}))
+	);
+	MenuBuilder.AddMenuSeparator();
 	if (Object)
 	{
 		if (UEditorUtilityWidgetBlueprint* WidgetBlueprint = Cast<UEditorUtilityWidgetBlueprint>(Object))
@@ -471,22 +531,22 @@ TSharedPtr<SWidget> SCustomItemObjectWidget::CreateRightClickMenu()
 	return MenuBuilder.MakeWidget();
 }
 
-void SCustomItemObjectWidget::SetIndex(const int32 InIndex)
+void SQuickItemWidget::SetIndex(const int32 InIndex)
 {
 	Index = InIndex;
 }
 
-int32 SCustomItemObjectWidget::GetIndex() const
+int32 SQuickItemWidget::GetIndex() const
 {
 	return Index;
 }
 
-UObject* SCustomItemObjectWidget::GetObject() const
+UObject* SQuickItemWidget::GetObject() const
 {
 	return StaticLoadObject(UObject::StaticClass(), nullptr, *Path);
 }
 
-const FSlateBrush* SCustomItemObjectWidget::GetDirtyImage() const
+const FSlateBrush* SQuickItemWidget::GetDirtyImage() const
 {
 	const UObject* Object = GetObject();
 	if (!Object)
@@ -499,6 +559,11 @@ const FSlateBrush* SCustomItemObjectWidget::GetDirtyImage() const
 		return nullptr;
 	}
 	return Package->IsDirty() ? AssetDirtyBrush.Get() : nullptr;
+}
+
+void SQuickItemWidget::RenameTab(const FString& OldName, const FString& NewName)
+{
+	TabName = NewName;
 }
 
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION

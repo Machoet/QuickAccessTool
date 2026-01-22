@@ -18,6 +18,17 @@ namespace QuickAccessToolLanguage
 	static const FText NoAssetsSelected = LOCTEXT("NoAssetsSelected", "No assets selected. Please select some assets to add.");
 	static const FText QuickAccessUpdated = LOCTEXT("QuickAccessUpdated", "Quick access list updated successfully.");
 
+	
+	static const FText MoveToNewPage = LOCTEXT("MoveToNewPage", "Move To New Page");
+	static const FText MoveToAnotherPage = LOCTEXT("MoveToAnotherPage", "Move this asset to another tab");
+	static const FText MoveTo = LOCTEXT("MoveTo", "Move to {0}");
+
+	static const FText AddNewTab = LOCTEXT("AddNewTab", "Add New Tab");
+	static const FText AddNewTabTooltip = LOCTEXT("AddNewTabTooltip", "Create a new paginated tab");
+	
+	static const FText RemoveCurrentTab = LOCTEXT("RemoveCurrentTab", "Remove Current Tab");
+	static const FText RemoveCurrentTabTooltip = LOCTEXT("RemoveCurrentTabTooltip", "Delete the currently active tab and its data");
+	
 	static const FText SelectAllFilesFormat = LOCTEXT("SelectAllFilesFormat", "Select All Files{0}");
 	static const FText SelectAllFilesTooltip = LOCTEXT("SelectAllFilesTooltip", "Select All Files In Tool");
 
@@ -49,6 +60,7 @@ namespace QuickAccessToolLanguage
 	static const FText Language = LOCTEXT("Language", "Language");
 	static const FText SourceCodeEditor = LOCTEXT("SourceCodeEditor", "Source Code Editor");
 	static const FText LessCPU = LOCTEXT("LessCPU", "Use Less CPU when in Background");
+	static const FText UseMouseForTouch = LOCTEXT("UseMouseForTouch", "Use Mouse For Touch");
 
 	static const FText OpenColorPicker = LOCTEXT("OpenColorPicker", "Open Color Picker");
 	static const FText CopyColorToClipboard = LOCTEXT("CopyColorToClipboard", "Copy Color To Clipboard");

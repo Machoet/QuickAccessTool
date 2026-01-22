@@ -8,10 +8,10 @@
 
 struct FCommandItem;
 
-class QUICKACCESSTOOL_API SCustomCommandsPanel : public SCompoundWidget
+class QUICKACCESSTOOL_API SQuickCommandsPanel : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SCustomCommandsPanel)
+	SLATE_BEGIN_ARGS(SQuickCommandsPanel)
 		{
 		}
 

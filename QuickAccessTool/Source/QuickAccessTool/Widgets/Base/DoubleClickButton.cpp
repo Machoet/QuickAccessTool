@@ -1,27 +1,31 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "DoubleClickButton.h"
-
+﻿#include "DoubleClickButton.h"
 #include "SlateOptMacros.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SDoubleClickButton::Construct(const FArguments& InArgs)
 {
-	SetOnClicked(InArgs._OnClicked);
-	SetButtonStyle(InArgs._ButtonStyle);
 	OnDoubleClicked = InArgs._OnDoubleClicked;
 	OnQuickPressed = InArgs._OnPressed;
 	OnQuickReleased = InArgs._OnReleased;
+
+	SButton::Construct(SButton::FArguments()
+		.ButtonStyle(InArgs._ButtonStyle)
+		.OnClicked(InArgs._OnClicked)
+		.HAlign(InArgs._HAlign)
+		.VAlign(InArgs._VAlign)
+		.Content()
+		[
+			InArgs._Content.Widget
+		]
+	);
 }
 
 FReply SDoubleClickButton::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
 {
 	if (OnDoubleClicked.IsBound())
 	{
-		FReply Reply = OnDoubleClicked.Execute();
-		return Reply;
+		return OnDoubleClicked.Execute();
 	}
 	return SButton::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
 }

@@ -7,15 +7,17 @@
 
 DECLARE_DELEGATE(FOnClick);
 DECLARE_DELEGATE_OneParam(FOnItemClick, const int32);
+DECLARE_DELEGATE_TwoParams(FOnMoveToClick, const FString, const int32);
 DECLARE_DELEGATE_ThreeParams(FOnItemDrag, const FVector2D, const float, const int32);
 
 class SDoubleClickButton;
 
-class QUICKACCESSTOOL_API SCustomItemObjectWidget : public SCompoundWidget
+class QUICKACCESSTOOL_API SQuickItemWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SCustomItemObjectWidget)
-			: _Path(""),
+	SLATE_BEGIN_ARGS(SQuickItemWidget)
+			: _TabName(""),
+			  _Path(""),
 			  _Text(FText::GetEmpty()),
 			  _IsSelected(false),
 			  _IconWidget(nullptr),
@@ -23,6 +25,7 @@ public:
 		{
 		}
 
+		SLATE_ATTRIBUTE(FString, TabName)
 		SLATE_ATTRIBUTE(FString, Path)
 		SLATE_ATTRIBUTE(FText, Text)
 		SLATE_ATTRIBUTE(bool, IsSelected)
@@ -34,6 +37,9 @@ public:
 		SLATE_EVENT(FOnItemDrag, OnItemDragEnd)
 		SLATE_EVENT(FOnClick, OnSelectAllClicked)
 		SLATE_EVENT(FOnClick, OnClearAllClicked)
+		SLATE_EVENT(FOnClick, OnAddNewTabClicked)
+		SLATE_EVENT(FOnClick, OnRemoveTabClicked)
+		SLATE_EVENT(FOnMoveToClick, OnMoveToClick)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -61,6 +67,8 @@ public:
 	static float GetSize() { return 30.0f; }
 	static float GetOffset() { return 2.0f; }
 	const FSlateBrush* GetDirtyImage() const;
+	FString GetPath() const { return Path; }
+	void RenameTab(const FString& OldName, const FString& NewName);
 
 private:
 	TSharedPtr<SDoubleClickButton> Button;
@@ -80,9 +88,13 @@ private:
 	FOnItemDrag OnItemDragEnd;
 	FOnClick OnSelectAllClicked;
 	FOnClick OnClearAllClicked;
+	FOnClick OnAddNewTabClicked;
+	FOnClick OnRemoveTabClicked;
+	FOnMoveToClick OnMoveToClick;
 
 	TUniquePtr<FSlateBrush> AssetDirtyBrush = nullptr;
 	FVector2D DragPosition = FVector2D(0, 0);
+	FString TabName = FString("");
 	FString Path = FString("");
 	int32 Index = -1;
 	TSharedPtr<SWidget> IconWidget;

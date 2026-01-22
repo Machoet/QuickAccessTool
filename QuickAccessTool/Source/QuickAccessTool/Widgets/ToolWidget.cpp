@@ -2,9 +2,10 @@
 
 #include "ToolWidget.h"
 
-#include "Page/CustomCommandsPanel.h"
+#include "Base/PaginatedWidget.h"
+#include "Page/QuickCommandsPanel.h"
 #include "Page/QuickCommonWidget.h"
-#include "Page/QuickPanel.h"
+#include "Page/QuickPanelWidget.h"
 #include "Page/QuickTaskWidget.h"
 #include "QuickAccessTool/Common/QuickAccessLibrary.h"
 #include "QuickAccessTool/Module/QuickAccessTool.h"
@@ -102,6 +103,9 @@ void SToolWidget::Construct(const FArguments& InArgs)
 	TitleBlockStyle = MakeUnique<FTextBlockStyle>();
 	TitleBlockStyle->ColorAndOpacity = FLinearColor::White;
 
+	FTextBlockStyle TempCustomTextStyle = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("FlatButton.DefaultTextStyle");
+	TempCustomTextStyle.Font.Size = 11;
+	CustomTextStyle = MakeUnique<FTextBlockStyle>(TempCustomTextStyle);
 
 	SAssignNew(MenuHorizontalBox, SHorizontalBox);
 	for (int32 i = 0; i < MenuTexts.Num(); i++)
@@ -110,7 +114,7 @@ void SToolWidget::Construct(const FArguments& InArgs)
 		SAssignNew(MenuButton, SButton)
 		.ButtonStyle(TitleButtonStyle.Get())
 		.Text(MenuTexts[i])
-		.TextStyle(FEditorStyle::Get(), "FlatButton.DefaultTextStyle")
+		.TextStyle(CustomTextStyle.Get())
 		.OnClicked(this, &SToolWidget::OnMenuClicked, i);
 
 		MenuHorizontalBox->AddSlot()
@@ -125,6 +129,44 @@ void SToolWidget::Construct(const FArguments& InArgs)
 			MenuButton->SetEnabled(false);
 		}
 	}
+
+	SAssignNew(QuickPanelPaginatedWidget, SPaginatedWidget)
+	.InitialPageIndex(FQuickAccessToolModule::QuickAccessArchiveInfo.ActiveQuickPanelMenuIndex)
+	.OnTabRename_Lambda([TempThis](const FString& OldName, const FString& NewName)
+	{
+		if (!TempThis.IsValid())
+		{
+			return;
+		}
+		TArray<TSharedPtr<SQuickPanelWidget>> OutPages;
+		TempThis.Pin()->QuickPanelPaginatedWidget->GetAllPageWidgetsAs(OutPages);
+		for (auto QuickPanelWidget : OutPages)
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->RenameTab(OldName, NewName);
+			}
+		}
+	});
+
+	for (const auto& Tuple : FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap)
+	{
+		const FString& TabName = Tuple.Key;
+		QuickPanelPaginatedWidget->AddPage(
+			FText::FromString(TabName),
+			SNew(SQuickPanelWidget).TabName(TabName)
+		);
+	}
+	if (FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Num() == 0)
+	{
+		static FString DefaultName = TEXT("Default");
+		QuickPanelPaginatedWidget->AddPage(
+			FText::FromString(DefaultName),
+			SNew(SQuickPanelWidget).TabName(DefaultName)
+		);
+	}
+
+	BindEvent();
 
 	ChildSlot
 	[
@@ -156,7 +198,7 @@ void SToolWidget::Construct(const FArguments& InArgs)
 					.WidgetIndex(this, &SToolWidget::GetMenuWidgetIndex)
 					+ SWidgetSwitcher::Slot()
 					[
-						SAssignNew(QuickPanel, SQuickPanel)
+						QuickPanelPaginatedWidget.ToSharedRef()
 					]
 					+ SWidgetSwitcher::Slot()
 					.Padding(4.0f, 0, 0, 0)
@@ -171,24 +213,43 @@ void SToolWidget::Construct(const FArguments& InArgs)
 					+ SWidgetSwitcher::Slot()
 					.Padding(4.0f, 0, 0, 0)
 					[
-						SAssignNew(CustomCommandsPanel, SCustomCommandsPanel)
+						SAssignNew(CustomCommandsPanel, SQuickCommandsPanel)
 					]
 				]
 			]
 		]
 	];
+	IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+	AssetRegistry.OnAssetRemoved().AddSP(this, &SToolWidget::OnAssetRemoved);
+}
 
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(
-		"AssetRegistry");
-
-	AssetRegistryModule.Get().OnAssetRemoved().AddRaw(this, &SToolWidget::OnAssetRemoved);
+SToolWidget::~SToolWidget()
+{
+	if (FModuleManager::Get().IsModuleLoaded("AssetRegistry"))
+	{
+		IAssetRegistry& AssetRegistry = FModuleManager::GetModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+		AssetRegistry.OnAssetRemoved().RemoveAll(this);
+	}
 }
 
 void SToolWidget::OnAssetRemoved(const FAssetData& AssetData) const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		if (QuickPanel->OnAssetRemoved(AssetData))
+		TArray<TSharedPtr<SQuickPanelWidget>> OutPages;
+		QuickPanelPaginatedWidget->GetAllPageWidgetsAs(OutPages);
+		bool RemovePage = false;
+		for (const TSharedPtr<SQuickPanelWidget>& QuickPanelWidget : OutPages)
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				if (QuickPanelWidget->OnAssetRemoved(AssetData))
+				{
+					RemovePage = true;
+				}
+			}
+		}
+		if (RemovePage)
 		{
 			FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 		}
@@ -220,25 +281,43 @@ FReply SToolWidget::OnMenuClicked(const int32 Index)
 
 void SToolWidget::OnBrowseAssetClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnBrowseAssetClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnBrowseAssetClicked();
+			}
+		}
 	}
 }
 
 void SToolWidget::OnReferenceViewerClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnReferenceViewerClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnReferenceViewerClicked();
+			}
+		}
 	}
 }
 
 void SToolWidget::OnExploreFolderClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnExploreFolderClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnExploreFolderClicked();
+			}
+		}
 	}
 }
 
@@ -271,9 +350,15 @@ FReply SToolWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointe
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		if (QuickPanel.IsValid())
+		if (QuickPanelPaginatedWidget.IsValid())
 		{
-			QuickPanel->OnItemClick(-1);
+			if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+			{
+				if (QuickPanelWidget.IsValid())
+				{
+					QuickPanelWidget->OnItemClick(-1);
+				}
+			}
 		}
 	}
 	return SCompoundWidget::OnMouseButtonDown(MyGeometry, MouseEvent);
@@ -330,19 +415,123 @@ FReply SToolWidget::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEven
 	return SCompoundWidget::OnMouseWheel(MyGeometry, MouseEvent);
 }
 
+void SToolWidget::OnRefresh(const FString& NewTabName)
+{
+	if (!QuickPanelPaginatedWidget.IsValid()) return;
+
+	TArray<TSharedPtr<SQuickPanelWidget>> OutPages;
+	QuickPanelPaginatedWidget->GetAllPageWidgetsAs(OutPages);
+
+	for (const TSharedPtr<SQuickPanelWidget>& PageWidget : OutPages)
+	{
+		if (PageWidget.IsValid())
+		{
+			if (PageWidget->GetTabName() == NewTabName)
+			{
+				PageWidget->Refresh();
+				break;
+			}
+		}
+	}
+}
+
+void SToolWidget::OnAddNewTab()
+{
+	if (!QuickPanelPaginatedWidget.IsValid())
+	{
+		return;
+	}
+	while (true)
+	{
+		static int Index = 0;
+		FString NewTabName = TEXT("NewTab_") + FString::FromInt(Index++);
+		if (!FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Contains(NewTabName))
+		{
+			FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Add(NewTabName, TArray<FString>());
+
+			QuickPanelPaginatedWidget->AddPage(
+				FText::FromString(NewTabName),
+				SNew(SQuickPanelWidget).TabName(NewTabName), true
+			);
+			BindEvent();
+			FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+			break;
+		}
+	}
+}
+
+void SToolWidget::BindEvent()
+{
+	TArray<TSharedPtr<SQuickPanelWidget>> OutPages;
+	QuickPanelPaginatedWidget->GetAllPageWidgetsAs(OutPages);
+	TWeakPtr<SToolWidget> TempThis = SharedThis(this);
+	for (const auto& Tuple : OutPages)
+	{
+		if (Tuple.IsValid())
+		{
+			if (!Tuple->AddNewTab.IsBound())
+			{
+				Tuple->AddNewTab.BindLambda([TempThis]()
+				{
+					if (TempThis.IsValid())
+					{
+						TempThis.Pin()->OnAddNewTab();
+					}
+				});
+			}
+			if (!Tuple->RemoveTab.IsBound())
+			{
+				Tuple->RemoveTab.BindLambda([TempThis]()
+				{
+					if (TempThis.IsValid())
+					{
+						TempThis.Pin()->OnRemoveCurrentTab();
+					}
+				});
+			}
+			if (!Tuple->OnRefreshClicked.IsBound())
+			{
+				Tuple->OnRefreshClicked.BindLambda([TempThis](const FString& NewTabName)
+				{
+					if (TempThis.IsValid())
+					{
+						TempThis.Pin()->OnRefresh(NewTabName);
+					}
+				});
+			}
+		}
+	}
+}
+
+void SToolWidget::OnRemoveCurrentTab() const
+{
+	if (!QuickPanelPaginatedWidget.IsValid()) return;
+
+	int32 ActiveIdx = QuickPanelPaginatedWidget->GetActivePageIndex();
+
+	TArray<FString> Keys;
+	FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.GetKeys(Keys);
+	if (Keys.IsValidIndex(ActiveIdx))
+	{
+		FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Remove(Keys[ActiveIdx]);
+	}
+	QuickPanelPaginatedWidget->RemovePage(ActiveIdx);
+	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+}
+
 TSharedPtr<SWidget> SToolWidget::CreateRightClickMenu()
 {
-	if (!MenuTexts.IsValidIndex(FQuickAccessToolModule::QuickAccessArchiveInfo.ActiveMenuIndex))
-	{
-		return nullptr;
-	}
 	FMenuBuilder MenuBuilder(true, nullptr);
-	if (MenuTexts[FQuickAccessToolModule::QuickAccessArchiveInfo.ActiveMenuIndex].ToString() == QuickAccessToolLanguage::QuickPanel.ToString())
+
+	if (MenuTexts.IsValidIndex(FQuickAccessToolModule::QuickAccessArchiveInfo.ActiveMenuIndex))
 	{
-		CreateQuickPanelMenu(MenuBuilder);
-		MenuBuilder.AddMenuSeparator();
+		if (MenuTexts[FQuickAccessToolModule::QuickAccessArchiveInfo.ActiveMenuIndex].ToString() == QuickAccessToolLanguage::QuickPanel.ToString())
+		{
+			CreateQuickPanelMenu(MenuBuilder);
+			MenuBuilder.AddMenuSeparator();
+		}
 	}
-	
+
 	MenuBuilder.AddMenuEntry(
 		FText::Format(QuickAccessToolLanguage::ClipboardTexture, FText::FromString("    (Alt + V)")),
 		QuickAccessToolLanguage::ClipboardSaveAsTextureToolTips,
@@ -352,12 +541,29 @@ TSharedPtr<SWidget> SToolWidget::CreateRightClickMenu()
 			UQuickAccessLibrary::SaveClipboardToAsset();
 		}))
 	);
+
 	return MenuBuilder.MakeWidget();
 }
 
 void SToolWidget::CreateQuickPanelMenu(FMenuBuilder& MenuBuilder)
 {
 	TWeakPtr<SToolWidget> TempThis = SharedThis(this);
+
+	MenuBuilder.AddMenuEntry(
+		QuickAccessToolLanguage::AddNewTab,
+		QuickAccessToolLanguage::AddNewTabTooltip,
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SToolWidget::OnAddNewTab))
+	);
+
+	MenuBuilder.AddMenuEntry(
+		QuickAccessToolLanguage::RemoveCurrentTab,
+		QuickAccessToolLanguage::RemoveCurrentTabTooltip,
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &SToolWidget::OnRemoveCurrentTab))
+	);
+
+	MenuBuilder.AddMenuSeparator();
 
 	MenuBuilder.AddMenuEntry(
 		FText::Format(QuickAccessToolLanguage::SelectAllFilesFormat, FText::FromString("    (Ctrl + A)")),
@@ -400,43 +606,74 @@ void SToolWidget::CreateQuickPanelMenu(FMenuBuilder& MenuBuilder)
 
 void SToolWidget::OnClearAllFilesClicked()
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnClearAllFilesClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnClearAllFilesClicked();
+				TArray<FString>& PathArray = QuickPanelWidget->GetPathArray();
+				PathArray.Empty();
+				FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+			}
+		}
 	}
-	FQuickAccessToolModule::QuickAccessArchiveInfo.PathArray.Empty();
-	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
 
 void SToolWidget::OnSelectAllClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnSelectAllClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnSelectAllClicked();
+			}
+		}
 	}
 }
 
 void SToolWidget::OnSaveClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnSaveClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnSaveClicked();
+			}
+		}
 	}
 }
 
 void SToolWidget::OnSaveAllClicked() const
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnSaveAllClicked();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnSaveAllClicked();
+			}
+		}
 	}
 }
 
 void SToolWidget::OnDeleteObject()
 {
-	if (QuickPanel.IsValid())
+	if (QuickPanelPaginatedWidget.IsValid())
 	{
-		QuickPanel->OnDeleteObject();
+		if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
+		{
+			if (QuickPanelWidget.IsValid())
+			{
+				QuickPanelWidget->OnDeleteObject();
+			}
+		}
 	}
 	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
@@ -449,25 +686,51 @@ void SToolWidget::EventOnKeyDown(const FKey& InKey) const
 	}
 }
 
-void SToolWidget::OnAddObjects(TArray<FString> NewPath)
+void SToolWidget::OnAddObjectsClick(TArray<FString> NewPath)
 {
-	TArray<FString> Path;
-	for (int i = 0; i < NewPath.Num(); ++i)
+	if (!QuickPanelPaginatedWidget.IsValid())
 	{
-		if (!FQuickAccessToolModule::QuickAccessArchiveInfo.PathArray.Contains(NewPath[i]))
+		return;
+	}
+	if (FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Num() <= 0)
+	{
+		FString NewTabName = TEXT("Default");
+		if (!FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Contains(NewTabName))
 		{
-			Path.AddUnique(NewPath[i]);
+			FQuickAccessToolModule::QuickAccessArchiveInfo.MultiPathMap.Add(NewTabName, TArray<FString>());
+			FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+
+			QuickPanelPaginatedWidget->AddPage(
+				FText::FromString(NewTabName),
+				SNew(SQuickPanelWidget).TabName(NewTabName), true
+			);
 		}
 	}
-	if (NewPath.Num() > 0)
+
+	if (TSharedPtr<SQuickPanelWidget> QuickPanelWidget = QuickPanelPaginatedWidget->GetActivePageWidgetAs<SQuickPanelWidget>())
 	{
-		OnMenuClicked(0);
-		if (QuickPanel.IsValid())
+		if (QuickPanelWidget.IsValid())
 		{
-			QuickPanel->OnAddObjects(Path);
+			TArray<FString> Path;
+			TArray<FString>& PathArray = QuickPanelWidget->GetPathArray();
+
+			int Offset = PathArray.Num();
+			for (int i = 0; i < NewPath.Num(); ++i)
+			{
+				if (!PathArray.Contains(NewPath[i]))
+				{
+					Path.AddUnique(NewPath[i]);
+				}
+			}
+			if (NewPath.Num() > 0)
+			{
+				OnMenuClicked(0);
+
+				PathArray.Append(Path);
+			}
+
+			QuickPanelWidget->OnAddObjects(Path, Offset);
 		}
-		FQuickAccessToolModule::QuickAccessArchiveInfo.PathArray.Append(Path);
-		FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 	}
 }
 

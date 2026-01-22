@@ -136,7 +136,7 @@ bool FQuickAccessToolModule::AddSelectedFiles() const
 
 	if (ToolWidget.IsValid())
 	{
-		ToolWidget->OnAddObjects(TempArray);
+		ToolWidget->OnAddObjectsClick(TempArray);
 	}
 	return true;
 }

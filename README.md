@@ -82,5 +82,13 @@ UE4.26~ UE5.6
 添加按键能执行命令的配置
 
 ![alt text](/Resources/Key.png)
+
+添加分页功能
+
+![alt text](/Resources/NewPage.png)
+
+添加切安卓输入
+
+![alt text](/Resources/InputAndroid.png)
 ## 反馈
 联系QQ2923211924并说明来意

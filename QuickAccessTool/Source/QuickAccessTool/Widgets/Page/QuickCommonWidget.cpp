@@ -3,11 +3,13 @@
 
 #include "QuickCommonWidget.h"
 #include "DetailLayoutBuilder.h"
+#include "EditorStyleSet.h"
 #include "ISourceCodeAccessModule.h"
 #include "ISourceCodeAccessor.h"
 #include "SlateOptMacros.h"
 #include "Brushes/SlateColorBrush.h"
 #include "Editor/EditorPerformanceSettings.h"
+#include "GameFramework/InputSettings.h"
 #include "Internationalization/Culture.h"
 #include "QuickAccessTool/Language/Language.h"
 #include "QuickAccessTool/Module/QuickAccessTool.h"
@@ -75,61 +77,143 @@ void SQuickCommonWidget::Construct(const FArguments& InArgs)
 		];
 
 	ItemButtonStyle = MakeUnique<FButtonStyle>();
-	ItemButtonStyle->SetNormal(FSlateColorBrush(FLinearColor(1, 0.4, 0, 0.2)));
+
+#if ENGINE_MAJOR_VERSION >= 5
+	ItemButtonStyle->SetNormal(FSlateColorBrush(FLinearColor(0, 0, 0, 1)));
 	ItemButtonStyle->SetHovered(FSlateColorBrush(FLinearColor(1, 0.4, 0, 0.65)));
-	ItemButtonStyle->SetPressed(FSlateColorBrush(FLinearColor(1, 0.4, 0, 0.4)));
+	ItemButtonStyle->SetPressed(FSlateColorBrush(FLinearColor(0, 0, 0, 1)));
 	ItemButtonStyle->SetNormalPadding(FMargin(2, 2, 2, 2));
 	ItemButtonStyle->SetPressedPadding(FMargin(2, 2, 2, 2));
-
+	FTextBlockStyle TempColorButtonTextStyle = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("FlatButton.DefaultTextStyle");
+	TempColorButtonTextStyle.Font.Size = 8;
+	ColorButtonTextStyle = MakeUnique<FTextBlockStyle>(TempColorButtonTextStyle);
+#else
+	ItemButtonStyle->SetNormal(FSlateColorBrush(FLinearColor(0.7f, 0.7, 0.7, 1)));
+	ItemButtonStyle->SetHovered(FSlateColorBrush(FLinearColor(1.0f, 0.4, 0, 0.65)));
+	ItemButtonStyle->SetPressed(FSlateColorBrush(FLinearColor(0.7, 0.7, 0.7, 1)));
+	ItemButtonStyle->SetNormalPadding(FMargin(2, 2, 2, 2));
+	ItemButtonStyle->SetPressedPadding(FMargin(2, 2, 2, 2));
+	FTextBlockStyle TempColorButtonTextStyle = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("FlatButton.DefaultTextStyle");
+	TempColorButtonTextStyle.ColorAndOpacity = FLinearColor(0.f, 0.f, 0.f, 1.f);
+	TempColorButtonTextStyle.SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 8));
+	TempColorButtonTextStyle.SetHighlightColor(FLinearColor(1.0f, 1.0f, 1.0f, 0.f));
+	TempColorButtonTextStyle.SetShadowColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.f));
+	ColorButtonTextStyle = MakeUnique<FTextBlockStyle>(TempColorButtonTextStyle);
+#endif
 	CustomizeDetails();
 
 	ChildSlot
 	[
-
 		SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		.AutoHeight()
+		.Padding(2)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
+			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
 				.Text(QuickAccessToolLanguage::Language)
 			]
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
 				LanguageComboBox.ToSharedRef()
 			]
 		]
 		+ SVerticalBox::Slot()
 		.AutoHeight()
+		.Padding(2)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
 				.Text(QuickAccessToolLanguage::SourceCodeEditor)
 			]
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
 				CodeComboBox.ToSharedRef()
 			]
 		]
 		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(2)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Center)
+				.AutoWidth()
+				[
+					SNew(STextBlock)
+					.Text(QuickAccessToolLanguage::CopyColorToClipboard)
+				]
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Center)
+				.Padding(5, 0)
+				[
+					SNew(SCheckBox)
+					.IsChecked_Lambda([this]
+					{
+						return FQuickAccessToolModule::QuickAccessArchiveInfo.bCopyColorToClipboard
+							       ? ECheckBoxState::Checked
+							       : ECheckBoxState::Unchecked;
+					})
+					.OnCheckStateChanged_Lambda([this](const ECheckBoxState InCheckBoxState)
+					{
+						FQuickAccessToolModule::QuickAccessArchiveInfo.bCopyColorToClipboard = InCheckBoxState ==
+							ECheckBoxState::Checked;
+						FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+					})
+				]
+			]
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Left)
+			[
+				SNew(SBox)
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Center)
+				.HeightOverride(20)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
+					.ButtonStyle(ItemButtonStyle.Get())
+					.TextStyle(ColorButtonTextStyle.Get())
+					.Text(QuickAccessToolLanguage::OpenColorPicker)
+					.OnClicked_Raw(this, &SQuickCommonWidget::OnPickColorClicked)
+				]
+			]
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(2)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
 				.Text(QuickAccessToolLanguage::LessCPU)
 			]
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
 				SNew(SCheckBox)
 				.IsChecked_Lambda([ ]
@@ -152,40 +236,37 @@ void SQuickCommonWidget::Construct(const FArguments& InArgs)
 		]
 		+ SVerticalBox::Slot()
 		.AutoHeight()
+		.Padding(2)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
-				SNew(SButton)
-				.ButtonStyle(ItemButtonStyle.Get())
-				.Text(QuickAccessToolLanguage::OpenColorPicker)
-				.OnClicked_Raw(this, &SQuickCommonWidget::OnPickColorClicked)
+				SNew(STextBlock)
+				.Text(QuickAccessToolLanguage::UseMouseForTouch)
 			]
 			+ SHorizontalBox::Slot()
-			.HAlign(HAlign_Fill)
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Left)
-				.AutoWidth()
-				.VAlign(VAlign_Center)
-				[
-					SNew(SCheckBox)
-					.ToolTipText(QuickAccessToolLanguage::CopyColorToClipboard)
-					.IsChecked_Lambda([this]
-					{
-						return FQuickAccessToolModule::QuickAccessArchiveInfo.bCopyColorToClipboard
-							       ? ECheckBoxState::Checked
-							       : ECheckBoxState::Unchecked;
-					})
-					.OnCheckStateChanged_Lambda([this](const ECheckBoxState InCheckBoxState)
-					{
-						FQuickAccessToolModule::QuickAccessArchiveInfo.bCopyColorToClipboard = InCheckBoxState ==
-							ECheckBoxState::Checked;
-						FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
-					})
-				]
+				SNew(SCheckBox)
+				.IsChecked_Lambda([ ]
+				{
+					const UInputSettings* Settings = GetMutableDefault<
+						UInputSettings>();
+					return (Settings->bUseMouseForTouch
+						        ? ECheckBoxState::Checked
+						        : ECheckBoxState::Unchecked);
+				})
+				.OnCheckStateChanged_Lambda([](const ECheckBoxState InCheckBoxState)
+				{
+					UInputSettings* Settings = GetMutableDefault<
+						UInputSettings>();
+					Settings->bUseMouseForTouch = InCheckBoxState ==
+						ECheckBoxState::Checked;
+					Settings->SaveConfig();
+				})
 			]
 		]
 	];

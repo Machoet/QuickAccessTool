@@ -63,4 +63,6 @@ private:
 	FLinearColor SelectColor = FLinearColor::White;
 	
 	TArray<TSharedPtr<FQuickAccessorItem>> Accessors;
+	
+	TUniquePtr<FTextBlockStyle> ColorButtonTextStyle;
 };
