@@ -89,6 +89,8 @@ UE4.26~ UE5.6
 
 添加切安卓输入
 
+双击命令可以修改复制命令
+
 ![alt text](/Resources/InputAndroid.png)
 ## 反馈
 联系QQ2923211924并说明来意

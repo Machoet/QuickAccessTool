@@ -93,24 +93,16 @@ void SQuickCommandsPanel::Construct(const FArguments& InArgs)
 				.FillWidth(1.0f)
 				[
 					SNew(SKeySelector)
-					.CurrentKey_Lambda([this]() -> TOptional<FKey>
-					{
-						return CurrentKey;
-					})
-					.OnKeyChanged_Lambda([this](const TSharedPtr<FKey>& SelectedKey)
-					{
-						CurrentKey = *SelectedKey.Get();
-					})
+					.CurrentKey_Lambda([this]() -> TOptional<FKey> { return CurrentKey; })
+					.OnKeyChanged_Lambda([this](const TSharedPtr<FKey>& SelectedKey) { CurrentKey = *SelectedKey.Get(); })
 					.FilterBlueprintBindable(false)
 					.AllowClear(true)
-					//.AllowKeyChange(true)
 				]
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
 				SNew(SHorizontalBox)
-
 				+ SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				.Padding(5, 0, 5, 0)
@@ -154,10 +146,10 @@ void SQuickCommandsPanel::Construct(const FArguments& InArgs)
 			.BorderImage(FCoreStyle::Get().GetBrush("ToolPanel.GroupBorder"))
 			[
 				SAssignNew(CommandListView, SListView<TSharedPtr<FCommandItem>>)
-				.ListItemsSource(&CommandItems)
-				.OnGenerateRow(this, &SQuickCommandsPanel::OnGenerateCommandRow)
-				.OnMouseButtonDoubleClick(this, &SQuickCommandsPanel::OnCommandItemClicked)
-				.SelectionMode(ESelectionMode::Single)
+				                                                                .ListItemsSource(&CommandItems)
+				                                                                .OnGenerateRow(this, &SQuickCommandsPanel::OnGenerateCommandRow)
+				                                                                .OnMouseButtonDoubleClick(this, &SQuickCommandsPanel::OnCommandItemDoubleClicked) // 双击编辑
+				                                                                .SelectionMode(ESelectionMode::Single)
 			]
 		]
 	];
@@ -183,9 +175,9 @@ TSharedRef<ITableRow> SQuickCommandsPanel::OnGenerateCommandRow(
 					.AutoHeight()
 					[
 						SNew(STextBlock)
-						.Text(FText::FromString(Item->CommandText))
+						.Text(FText::FromString(Item->DescriptionText))
 						.Font(FCoreStyle::GetDefaultFontStyle("Bold", 10))
-						.ToolTipText(FText::FromString(Item->CommandName))
+						.ToolTipText(FText::FromString(Item->CommandText))
 					]
 				]
 				+ SHorizontalBox::Slot()
@@ -194,17 +186,10 @@ TSharedRef<ITableRow> SQuickCommandsPanel::OnGenerateCommandRow(
 				.VAlign(VAlign_Center)
 				[
 					SNew(SKeySelector)
-					.CurrentKey_Lambda([this, Item]() -> TOptional<FKey>
-					{
-						return GetCurrentKey(Item);
-					})
-					.OnKeyChanged_Lambda([this, Item](const TSharedPtr<FKey>& SelectedKey)
-					{
-						OnKeyChanged(SelectedKey, Item);
-					})
+					.CurrentKey_Lambda([this, Item]() -> TOptional<FKey> { return GetCurrentKey(Item); })
+					.OnKeyChanged_Lambda([this, Item](const TSharedPtr<FKey>& SelectedKey) { OnKeyChanged(SelectedKey, Item); })
 					.FilterBlueprintBindable(false)
 					.AllowClear(true)
-					//.AllowKeyChange(true)
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -224,9 +209,21 @@ TSharedRef<ITableRow> SQuickCommandsPanel::OnGenerateCommandRow(
 		];
 }
 
+void SQuickCommandsPanel::OnCommandItemDoubleClicked(TSharedPtr<FCommandItem> Item)
+{
+	if (!Item.IsValid()) return;
+
+	SelectedItem = Item;
+
+	NewDescriptionInput->SetText(FText::FromString(Item->DescriptionText == Item->CommandText ? "" : Item->DescriptionText));
+	NewCommandInput->SetText(FText::FromString(Item->CommandText));
+	CurrentKey = Item->BindKey;
+}
+
 void SQuickCommandsPanel::OnCommandItemClicked(TSharedPtr<FCommandItem> Item)
 {
-	ExecuteCommand(Item->CommandName);
+	if (!Item.IsValid()) return;
+	ExecuteCommand(Item->CommandText);
 }
 
 void SQuickCommandsPanel::ExecuteCommand(const FString& Command)
@@ -236,20 +233,12 @@ void SQuickCommandsPanel::ExecuteCommand(const FString& Command)
 	{
 		if (GEditor->PlayWorld)
 		{
-			UKismetSystemLibrary::ExecuteConsoleCommand(
-				GEditor->PlayWorld,
-				Command,
-				nullptr
-			);
+			UKismetSystemLibrary::ExecuteConsoleCommand(GEditor->PlayWorld, Command, nullptr);
 			return;
 		}
 		else
 		{
-			UKismetSystemLibrary::ExecuteConsoleCommand(
-				GEditor->GetEditorWorldContext().World(),
-				Command,
-				nullptr
-			);
+			UKismetSystemLibrary::ExecuteConsoleCommand(GEditor->GetEditorWorldContext().World(), Command, nullptr);
 			return;
 		}
 	}
@@ -263,38 +252,65 @@ void SQuickCommandsPanel::ExecuteCommand(const FString& Command)
 
 FReply SQuickCommandsPanel::OnAddButtonClicked()
 {
-	FString Command = NewCommandInput->GetText().ToString();
 	FString Description = NewDescriptionInput->GetText().ToString();
+	FString Command = NewCommandInput->GetText().ToString();
 
-	if (!Command.IsEmpty())
+	if (Command.IsEmpty())
 	{
-		if (Description.IsEmpty())
-		{
-			Description = Command;
-		}
+		return FReply::Handled();
+	}
 
-		AddCommand(Command, Description);
+	if (Description.IsEmpty())
+	{
+		Description = Command;
+	}
+
+	TSharedPtr<FCommandItem> TempSelectedItem = nullptr;
+	if (CommandListView.IsValid())
+	{
+		TArray<TSharedPtr<FCommandItem>> SelectedItems = CommandListView->GetSelectedItems();
+		if (SelectedItems.Num() > 0)
+		{
+			TempSelectedItem = SelectedItems[0];
+		}
+	}
+
+	if (TempSelectedItem.IsValid())
+	{
+		if (TempSelectedItem->DescriptionText != Description)
+		{
+			FQuickAccessToolModule::QuickAccessArchiveInfo.AddCommand(Description, Command, CurrentKey);
+		}
 		NewCommandInput->SetText(FText::GetEmpty());
 		NewDescriptionInput->SetText(FText::GetEmpty());
-		FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 		CurrentKey = EKeys::Invalid;
 	}
+	else
+	{
+		FQuickAccessToolModule::QuickAccessArchiveInfo.AddCommand(Description, Command, CurrentKey);
+		NewCommandInput->SetText(FText::GetEmpty());
+		NewDescriptionInput->SetText(FText::GetEmpty());
+		CurrentKey = EKeys::Invalid;
+	}
+
+	RefreshDisplayItems();
+
+	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 
 	return FReply::Handled();
 }
 
 FReply SQuickCommandsPanel::OnDeleteButtonClicked()
 {
-	if (CommandListView.IsValid())
+	if (!CommandListView.IsValid()) return FReply::Handled();
+
+	TArray<TSharedPtr<FCommandItem>> SelectedItems = CommandListView->GetSelectedItems();
+	if (SelectedItems.Num() > 0)
 	{
-		TArray<TSharedPtr<FCommandItem>> SelectedItems = CommandListView->GetSelectedItems();
-		if (SelectedItems.Num() > 0)
-		{
-			TSharedPtr<FCommandItem> SelectedItem = SelectedItems[0];
-			RemoveCommand(SelectedItem->CommandText);
-			CommandListView->RequestListRefresh();
-			FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
-		}
+		TSharedPtr<FCommandItem> Selected = SelectedItems[0];
+		RemoveCommand(Selected->DescriptionText);
+		CommandListView->RequestListRefresh();
+		FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 	}
 
 	return FReply::Handled();
@@ -302,42 +318,36 @@ FReply SQuickCommandsPanel::OnDeleteButtonClicked()
 
 TOptional<FKey> SQuickCommandsPanel::GetCurrentKey(const TSharedPtr<FCommandItem>& Item) const
 {
-	if (Item.IsValid())
+	if (Item.IsValid() && Item->BindKey.IsValid())
 	{
-		if (Item->BindKey.IsValid())
-		{
-			return Item->BindKey;
-		}
+		return Item->BindKey;
 	}
 	return Invalid;
 }
 
 void SQuickCommandsPanel::OnKeyChanged(const TSharedPtr<FKey>& SelectedKey, const TSharedPtr<FCommandItem>& Item)
 {
-	if (Item.IsValid())
-	{
-		if (SelectedKey.IsValid())
-		{
-			Item->BindKey = *SelectedKey;
-			Item->BindKeyString = SelectedKey->ToString();
-		}
-		else
-		{
-			Item->BindKey = EKeys::Invalid;
-			Item->BindKeyString = TEXT("");
-		}
+	if (!Item.IsValid()) return;
 
-		FQuickAccessToolModule::QuickAccessArchiveInfo.ChangeCommandKey(Item->CommandText, Item->BindKey);
-		FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
+	if (SelectedKey.IsValid())
+	{
+		Item->BindKey = *SelectedKey;
+		Item->BindKeyString = SelectedKey->ToString();
 	}
+	else
+	{
+		Item->BindKey = EKeys::Invalid;
+		Item->BindKeyString = TEXT("");
+	}
+
+	FQuickAccessToolModule::QuickAccessArchiveInfo.ChangeCommandKey(Item->DescriptionText, Item->BindKey);
+	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
 
 void SQuickCommandsPanel::EventOnKeyDown(const FKey& InKey) const
 {
-	if (FQuickAccessToolModule::QuickAccessArchiveInfo.CommandKey.Num() <= 0)
-	{
-		return;
-	}
+	if (FQuickAccessToolModule::QuickAccessArchiveInfo.CommandKey.Num() <= 0) return;
+
 	for (auto KeyPair : FQuickAccessToolModule::QuickAccessArchiveInfo.CommandKey)
 	{
 		if (KeyPair.Value == InKey.ToString())
@@ -370,21 +380,18 @@ void SQuickCommandsPanel::RemoveCommand(int32 Index)
 	if (CommandItems.IsValidIndex(Index))
 	{
 		TSharedPtr<FCommandItem> ItemToRemove = CommandItems[Index];
-		RemoveCommand(ItemToRemove->CommandText);
+		RemoveCommand(ItemToRemove->DescriptionText);
 	}
 }
 
 void SQuickCommandsPanel::ClearAllCommands()
 {
 	FQuickAccessToolModule::QuickAccessArchiveInfo.EmptyCommand();
-
 	CommandItems.Empty();
-
 	if (CommandListView.IsValid())
 	{
 		CommandListView->RequestListRefresh();
 	}
-
 	FQuickAccessToolModule::QuickAccessArchiveInfo.Save();
 }
 

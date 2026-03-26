@@ -10,30 +10,30 @@
 
 struct FCommandItem
 {
-    FString CommandName;
     FString CommandText;
+    FString DescriptionText;
     FKey BindKey;
     FString BindKeyString;
 
     FCommandItem(const FString& InName, const FString& InText)
-       : CommandName(InName)
-         , CommandText(InText)
+       : CommandText(InName)
+         , DescriptionText(InText)
          , BindKey(EKeys::Invalid)
     {
        BindKeyString = TEXT("");
     }
 
     FCommandItem(const FString& InName, const FString& InText, const FKey& InKey)
-       : CommandName(InName)
-         , CommandText(InText)
+       : CommandText(InName)
+         , DescriptionText(InText)
          , BindKey(InKey)
     {
        BindKeyString = InKey.ToString();
     }
 
     FCommandItem(const FString& InName, const FString& InText, const FString& InKey)
-       : CommandName(InName)
-         , CommandText(InText),
+       : CommandText(InName)
+         , DescriptionText(InText),
          BindKey(FName(InKey))
     {
        BindKeyString = InKey;
