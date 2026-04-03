@@ -344,8 +344,10 @@ TSharedRef<SWidget> SQuickCommonWidget::OnGenerateWidget(TSharedPtr<FQuickAccess
 
 void SQuickCommonWidget::OnSelectionChanged(TSharedPtr<FQuickAccessorItem> InItem, ESelectInfo::Type InSelectionInfo)
 {
+	GConfig->SetString(TEXT("/Script/SourceCodeAccess.SourceCodeAccessSettings"), TEXT("PreferredAccessor"), *InItem->Name.ToString(), GEditorSettingsIni);
 	ISourceCodeAccessModule& SourceCodeAccessModule = FModuleManager::LoadModuleChecked<ISourceCodeAccessModule>("SourceCodeAccess");
 	SourceCodeAccessModule.SetAccessor(InItem->Name);
+
 }
 
 FText SQuickCommonWidget::GetAccessorText() const
